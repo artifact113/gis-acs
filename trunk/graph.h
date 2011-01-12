@@ -20,11 +20,13 @@ public:
 	Edge *edgeTo(Vertex *v) const;
 	Edge *connectTo(Vertex *v, int weight);
 	Edge *virtuallyConnectTo(Vertex *v, int weight);
+        void turnToVirtual();
 
 	friend class Graph;
 private:
 	QString m_label;
 	QHash<Vertex *, Edge *> m_connectedVertices;
+        QList<Edge*> m_virtualPath;
 	Graph *m_graph;
 };
 
@@ -54,11 +56,14 @@ public:
 	Graph();
 	Vertex *createVertex(const QString &label);
 	Vertex *vertex(const QString &label) const;
+        void turnToCompleteGraph();
+        void findShortestPaths();
 	QList<Vertex *> vertices() const;
 	bool isConnected() const;
 	bool readFromFile(const QString &filename);
 private:
 	void dfsTraverseFrom(Vertex *v) const;
+        void dijkstraVertex(Vertex *v) const;
 private:
 	QHash<QString, Vertex *> m_vertices;
 	mutable QList<Vertex *> m_visited;
