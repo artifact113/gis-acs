@@ -9,6 +9,68 @@ Graph::Graph()
 {
 }
 
+void Graph::turnToCompleteGraph()
+{
+    QList<QString> vertices_labels= m_vertices.keys();
+
+    // turn to graph complate
+    foreach (const QString &label_from, vertices_labels)
+    {
+        Vertex* v_from = m_vertices.value(label_from);
+
+        foreach (const QString &label_to, vertices_labels)
+        {
+            Vertex* v_to = m_vertices.value(label_to);
+            if(v_from->edgeTo(v_to) == NULL)
+            {
+                v_from->connectTo(v_to, INT_MAX);
+            }
+        }
+    }
+}
+
+void Graph::findShortestPaths()
+{
+    QList<QString> vertices_labels= m_vertices.keys();
+
+    foreach (const QString &label_from, vertices_labels)
+    {
+        dijkstraVertex(m_vertices.value(label_from));
+    }
+}
+
+void Graph::dijkstraVertex(Vertex *v) const
+{
+    QList<Vertex*> remaining_vertexes = m_vertices;
+    QHash<Vertex*, QPair< qint32, QList<Edge*> > > paths;
+
+    // init to INT_MAX
+    foreach(Vertex* v, m_vertices)
+    {
+        paths.insert(v, QPair(INT_MAX, QList()));
+    }
+
+    // find shortest paths
+    while(!vertices.empty())
+    {
+        // pick the vertice from remaining group with shortest path;
+        Vertex* curr_vertex = remaining_vertexes.at(0);
+        int curr_vertex_index = 0;
+        for(int i = 0; i < remaining_vertexes.size(); ++i)
+        {
+            if(v->edgeTo(remaining_vertexes.at(i))->weight() < v->edgeTo(curr_vertex)->weight())
+            {
+                curr_vertex = remaining_vertexes.at(i);
+            }
+        }
+
+        // remove picked vertex from remaining list
+        remaining_vertexes.removeAt(curr_vertex_index);
+
+        //
+    }
+}
+
 Vertex *Graph::createVertex(const QString &label)
 {
 	if (m_vertices.contains(label)) {
