@@ -1,6 +1,8 @@
 TEMPLATE = app
 TARGET = gis-acs
 
+QT += xml
+
 HEADERS += \
     graph.h
 

@@ -1,4 +1,6 @@
 #include "graph.h"
+#include <QFile>
+#include <QDomDocument>
 
 namespace GIS {
 
@@ -41,8 +43,8 @@ void Graph::findShortestPaths()
 
 void Graph::dijkstraVertex(Vertex *v) const
 {
-    QList<Vertex*> remaining_vertexes = m_vertices;
-    QHash<Vertex*, QPair< qint32, QList<Edge*> > > paths;
+	QList<Vertex*> remaining_vertexes = m_vertices;
+	QHash<Vertex*, QPair< qint32, QList<Edge*> > > paths;
 
     // init to INT_MAX
     foreach(Vertex* v, m_vertices)
@@ -101,6 +103,11 @@ bool Graph::isConnected() const
 	return false;
 }
 
+QList<Vertex *> Graph::vertices() const
+{
+	return m_vertices.values();
+}
+
 void Graph::dfsTraverseFrom(Vertex *v) const
 {
 	if (m_visited.contains(v))
@@ -114,7 +121,57 @@ void Graph::dfsTraverseFrom(Vertex *v) const
 
 bool Graph::readFromFile(const QString &filename)
 {
-	// todo
+	QFile file(filename);
+
+	if (!file.open(QFile::ReadOnly | QFile::Text)) {
+		qDebug("Cannot open file!");
+		return false;
+	}
+
+	QDomDocument doc;
+	if (!doc.setContent(&file)) {
+		qDebug("File content is not a well-formed XML");
+		return false;
+	}
+
+	// clear vertices
+	// TODO delete items
+	m_vertices.clear();
+	m_visited.clear();
+
+	// XML parsing
+	QDomElement rootElem = doc.documentElement();
+	for (QDomElement edgeElem = rootElem.firstChildElement("edge"); !edgeElem.isNull(); edgeElem = edgeElem.nextSiblingElement("edge")) {
+		QDomElement vertex1Elem = edgeElem.firstChildElement("vertex");
+		if (vertex1Elem.isNull()) {
+			return false;
+		}
+		QDomElement vertex2Elem = vertex1Elem.nextSiblingElement("vertex");
+		if (vertex2Elem.isNull()) {
+			return false;
+		}
+		QDomElement weightElem = edgeElem.firstChildElement("weight");
+		if (weightElem.isNull()) {
+			return false;
+		}
+
+		Vertex *v1 = vertex(vertex1Elem.text());
+		if (!v1) {
+			v1 = createVertex(vertex1Elem.text());
+		}
+
+		Vertex *v2 = vertex(vertex2Elem.text());
+		if (!v2) {
+			v2 = createVertex(vertex2Elem.text());
+		}
+		bool ok = false;
+		int weight = weightElem.text().toInt(&ok);
+		if (!ok) {
+			return false;
+		}
+		v1->connectTo(v2, weight);
+	}
+	return true;
 }
 
 /*!
