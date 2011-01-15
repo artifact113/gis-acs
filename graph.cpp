@@ -87,6 +87,19 @@ void Graph::findShortestPaths()
     }
 }
 
+void Graph::printGraph()
+{
+    foreach(Vertex* from, m_vertices)
+    {
+        qDebug() << "Wierzcho³ek: " << from->label();
+
+        foreach(Vertex* to, from->connectedVertices())
+        {
+            qDebug() << from->label()<< " " << to->label() << " : " << from->edgeTo(to)->weight() << " " << from->edgeTo(to)->isVirtual();
+        }
+    }
+}
+
 QList<Vertex*> Graph::getPath(Vertex* from, Vertex* to)
 {
     QList<Vertex*> result_path;
@@ -337,6 +350,11 @@ Vertex *Edge::endPoint() const
 int Edge::weight() const
 {
 	return m_weight;
+}
+
+bool Edge::isVirtual() const
+{
+    return m_virtual;
 }
 
 void Edge::setWeight(int weight)
