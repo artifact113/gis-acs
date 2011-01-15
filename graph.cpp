@@ -1,8 +1,12 @@
 #include "graph.h"
 #include <QFile>
 #include <QDomDocument>
+#include <QtDebug>
+
 
 namespace GIS {
+
+static const int infinity = 10000000;
 
 /*!
   \class Graph
@@ -23,9 +27,10 @@ void Graph::turnToCompleteGraph()
         foreach (const QString &label_to, vertices_labels)
         {
             Vertex* v_to = m_vertices.value(label_to);
+
             if(v_from->edgeTo(v_to) == NULL)
             {
-                v_from->connectTo(v_to, INT_MAX);
+                v_from->connectTo(v_to, infinity);
             }
         }
     }
@@ -43,9 +48,10 @@ void Graph::findShortestPaths()
         //PI.insert(label_i, QHash<QString, QString>());
         foreach(QString label_j, vertices_labels)
         {
-            if(label_i != label_j && d(label_i, label_j)->weight() != INT_MAX)
+            if(label_i != label_j && d(label_i, label_j)->weight() != infinity /*INT_MAX*/)
             {
                 //PI.value(label_i)->insert(label_j, label_i);
+                qDebug() << label_i << " " << label_j;
                 m_vertices[label_j]->setPrevious(label_i, m_vertices[label_i]);
             }
         }
@@ -73,6 +79,28 @@ void Graph::findShortestPaths()
                     m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
                 }
             }
+        }
+    }
+}
+
+QList<Vertex*> Graph::getPath(Vertex* from, Vertex* to)
+{
+    QList<Vertex*> result_path;
+
+    if(from->label() == to->label())
+        result_path.append(from);
+    else
+    {
+        if(to->previous(from->label()))
+        {
+            qDebug() << "nie istnieje œcie¿ka z " << from->label() << " do " << to->label();
+            return result_path;
+        }
+        else
+        {
+            result_path = getPath(from, to->previous(from->label()));
+            result_path.append(to);
+            return result_path;
         }
     }
 }

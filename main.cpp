@@ -18,6 +18,16 @@ int main(int argc, char *argv[])
         graph->turnToCompleteGraph();
         graph->findShortestPaths();
 
+        qDebug() << graph->vertex("A")->edgeTo(graph->vertex("E"))->weight();
+        QList<GIS::Vertex*> test = graph->getPath(graph->vertex("A"), graph->vertex("E"));
+
+        qDebug() << "rozmiar œcie¿ki: " << test.size();
+
+        foreach(GIS::Vertex* v, test)
+        {
+            qDebug() << v->label();
+        }
+
 
 	return app.exec();
 }
