@@ -95,7 +95,14 @@ void Graph::printGraph()
 
         foreach(Vertex* to, from->connectedVertices())
         {
-            qDebug() << from->label()<< " " << to->label() << " : " << from->edgeTo(to)->weight() << " " << from->edgeTo(to)->isVirtual();
+            QString path_str;
+            QList<Vertex*> path = getPath(from, to);
+            foreach(Vertex* path_elem, path)
+            {
+                path_str.append(" ").append(path_elem->label());
+            }
+
+            qDebug() << from->label()<< " " << to->label() << " : " << from->edgeTo(to)->weight() << " " << from->edgeTo(to)->isVirtual() << "\t" << path_str;
         }
     }
 }
@@ -110,11 +117,7 @@ QList<Vertex*> Graph::getPath(Vertex* from, Vertex* to)
     }
     else
     {
-        if(to->previous(from->label()) == NULL)
-        {
-            qDebug() << "nie istnieje œcie¿ka z " << from->label() << " do " << to->label();
-        }
-        else
+        if(to->previous(from->label()) != NULL)
         {
             result_path = getPath(from, to->previous(from->label()));
             result_path.append(to);
