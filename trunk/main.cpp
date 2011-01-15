@@ -15,6 +15,8 @@ int main(int argc, char *argv[])
         //graph->turnToCompleteGraph();
         graph->findShortestPaths();
 
+        graph->printGraph();
+
         qDebug() << graph->vertex("A")->edgeTo(graph->vertex("E"))->weight();
         QList<GIS::Vertex*> test = graph->getPath(graph->vertex("A"), graph->vertex("E"));
 
