@@ -59,28 +59,34 @@ void Graph::findShortestPaths()
     {
         foreach(QString label_i, vertices_labels)
         {
-            foreach(QString label_j, vertices_labels)
+            if(label_i != label_k)
             {
-                Edge* d_ij = d(label_i, label_j);
-                Edge* d_ik = d(label_i, label_k);
-                Edge* d_kj = d(label_k, label_j);
-
-                int d_ij_weight = d_ij == NULL ? infinity : d_ij->weight();
-                int d_ik_weight = d_ik == NULL ? infinity : d_ik->weight();
-                int d_kj_weight = d_kj == NULL ? infinity : d_kj->weight();
-
-                if(d_ij_weight <= d_ik_weight + d_kj_weight && d_ij_weight != infinity)
+                foreach(QString label_j, vertices_labels)
                 {
-                    d(label_i, label_j)->setWeight(d_ij_weight);
-                }
-                else if(d_ij_weight > d_ik_weight + d_kj_weight)
-                {
-                    if(d_ij_weight != infinity)
-                        d(label_i, label_j)->setWeight(d_ik_weight + d_kj_weight);
-                    else
-                        vertex(label_i)->virtuallyConnectTo(vertex(label_j), d_ik_weight + d_kj_weight);
+                    if(label_i != label_j && label_j != label_k)
+                    {
+                        Edge* d_ij = d(label_i, label_j);
+                        Edge* d_ik = d(label_i, label_k);
+                        Edge* d_kj = d(label_k, label_j);
 
-                    m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
+                        int d_ij_weight = d_ij == NULL ? infinity : d_ij->weight();
+                        int d_ik_weight = d_ik == NULL ? infinity : d_ik->weight();
+                        int d_kj_weight = d_kj == NULL ? infinity : d_kj->weight();
+
+                        if(d_ij_weight <= d_ik_weight + d_kj_weight && d_ij_weight != infinity)
+                        {
+                            d(label_i, label_j)->setWeight(d_ij_weight);
+                        }
+                        else if(d_ij_weight > d_ik_weight + d_kj_weight)
+                        {
+                            if(d_ij_weight != infinity)
+                                d(label_i, label_j)->setWeight(d_ik_weight + d_kj_weight);
+                            else
+                                vertex(label_i)->virtuallyConnectTo(vertex(label_j), d_ik_weight + d_kj_weight);
+
+                            m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
+                        }
+                    }
                 }
             }
         }
