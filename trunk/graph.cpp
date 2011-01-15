@@ -35,24 +35,19 @@ void Graph::turnToCompleteGraph()
 void Graph::findShortestPaths()
 {
     QList<QString> vertices_labels= m_vertices.keys();
-    QHash<QString, QHash<QString, QString> > PI;
+    //QHash<QString, QHash<QString, QString> > PI;
 
     // init PI
     foreach(QString label_i, vertices_labels)
     {
-        PI.insert(label_i, QHash<QString, QString>());
+        //PI.insert(label_i, QHash<QString, QString>());
         foreach(QString label_j, vertices_labels)
         {
-
-            if(label_i == label_j || d(label_i, label_j)->weight() == INT_MAX)
+            if(label_i != label_j && d(label_i, label_j)->weight() != INT_MAX)
             {
-                PI.value(label_i)->insert(label_j, "");
+                //PI.value(label_i)->insert(label_j, label_i);
+                m_vertices[label_j]->setPrevious(label_i, m_vertices[label_i]);
             }
-            else
-            {
-                PI.value(label_i)->insert(label_j, label_i);
-            }
-
         }
     }
 
@@ -63,26 +58,23 @@ void Graph::findShortestPaths()
         {
             foreach(QString label_j, vertices_labels)
             {
-                int d_ij weight = d(label_i, label_j)->weight();
-                int d_ik weight = d(label_i, label_k)->weight();
-                int d_kj weight = d(label_k, label_j)->weight();
+                int d_ij_weight = d(label_i, label_j)->weight();
+                int d_ik_weight = d(label_i, label_k)->weight();
+                int d_kj_weight = d(label_k, label_j)->weight();
 
-                if(d_ij_weight <= dik_weight + dkj_weight)
+                if(d_ij_weight <= d_ik_weight + d_kj_weight)
                 {
                     d(label_i, label_j)->setWeight(d_ij_weight);
                 }
                 else
                 {
-                    d(label_i, label_j)->setWeight(dik_weight + dkj_weight);
-                    PI[label_i][label_j] = PI[label_k][label_j];
+                    d(label_i, label_j)->setWeight(d_ik_weight + d_kj_weight);
+                    //PI[label_i][label_j] = PI[label_k][label_j];
+                    m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
                 }
             }
         }
     }
-
-    // extract paths from PI and update edges in graph
-
-
 }
 
 Edge* Graph::d(QString label_i, QString label_j)
@@ -268,6 +260,15 @@ Edge *Vertex::connectTo(Vertex *v, int weight)
 	v->m_connectedVertices.insert(this, edge);
 	return edge;
 }
+Vertex* Vertex::previous(QString from)
+{
+    return m_previous[from];
+}
+
+void Vertex::setPrevious(QString from, Vertex* previous)
+{
+    m_previous[from] = previous;
+}
 
 /*!
   \class Edge
@@ -301,9 +302,9 @@ void Edge::setWeight(int weight)
     m_weight = weight;
 }
 
-void Edge::turnToVirtual(QList<QString>& m_virtual_path)
+void Edge::turnToVirtual()
 {
-
+    m_virtual= true;
 }
 
 } // namespace GIS
