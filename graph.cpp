@@ -40,17 +40,14 @@ void Graph::turnToCompleteGraph()
 void Graph::findShortestPaths()
 {
     QList<QString> vertices_labels= m_vertices.keys();
-    //QHash<QString, QHash<QString, QString> > PI;
 
     // init PI
     foreach(QString label_i, vertices_labels)
     {
-        //PI.insert(label_i, QHash<QString, QString>());
         foreach(QString label_j, vertices_labels)
         {
-            if(label_i != label_j && d(label_i, label_j)->weight() /*INT_MAX*/)
+            if(label_i != label_j && d(label_i, label_j) != NULL/*&& d(label_i, label_j)->weight()*/)
             {
-                //PI.value(label_i)->insert(label_j, label_i);
                 qDebug() << label_i << " " << label_j;
                 m_vertices[label_j]->setPrevious(label_i, m_vertices[label_i]);
             }
@@ -64,18 +61,25 @@ void Graph::findShortestPaths()
         {
             foreach(QString label_j, vertices_labels)
             {
-                int d_ij_weight = d(label_i, label_j)->weight();
-                int d_ik_weight = d(label_i, label_k)->weight();
-                int d_kj_weight = d(label_k, label_j)->weight();
+                Edge* d_ij = d(label_i, label_j);
+                Edge* d_ik = d(label_i, label_k);
+                Edge* d_kj = d(label_k, label_j);
 
-                if(d_ij_weight <= d_ik_weight + d_kj_weight)
+                int d_ij_weight = d_ij == NULL ? infinity : d_ij->weight();
+                int d_ik_weight = d_ik == NULL ? infinity : d_ik->weight();
+                int d_kj_weight = d_kj == NULL ? infinity : d_kj->weight();
+
+                if(d_ij_weight <= d_ik_weight + d_kj_weight && d_ij_weight != infinity)
                 {
                     d(label_i, label_j)->setWeight(d_ij_weight);
                 }
-                else
+                else if(d_ij_weight > d_ik_weight + d_kj_weight)
                 {
-                    d(label_i, label_j)->setWeight(d_ik_weight + d_kj_weight);
-                    //PI[label_i][label_j] = PI[label_k][label_j];
+                    if(d_ij_weight != infinity)
+                        d(label_i, label_j)->setWeight(d_ik_weight + d_kj_weight);
+                    else
+                        vertex(label_i)->virtuallyConnectTo(vertex(label_j), d_ik_weight + d_kj_weight);
+
                     m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
                 }
             }
@@ -88,21 +92,23 @@ QList<Vertex*> Graph::getPath(Vertex* from, Vertex* to)
     QList<Vertex*> result_path;
 
     if(from->label() == to->label())
+    {
         result_path.append(from);
+    }
     else
     {
-        if(to->previous(from->label()))
+        if(to->previous(from->label()) == NULL)
         {
             qDebug() << "nie istnieje œcie¿ka z " << from->label() << " do " << to->label();
-            return result_path;
         }
         else
         {
             result_path = getPath(from, to->previous(from->label()));
             result_path.append(to);
-            return result_path;
         }
     }
+
+    return result_path;
 }
 
 Edge* Graph::d(QString label_i, QString label_j)
