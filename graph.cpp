@@ -48,7 +48,7 @@ void Graph::findShortestPaths()
         //PI.insert(label_i, QHash<QString, QString>());
         foreach(QString label_j, vertices_labels)
         {
-            if(label_i != label_j && d(label_i, label_j)->weight() != infinity /*INT_MAX*/)
+            if(label_i != label_j && d(label_i, label_j)->weight() /*INT_MAX*/)
             {
                 //PI.value(label_i)->insert(label_j, label_i);
                 qDebug() << label_i << " " << label_j;
