@@ -35,12 +35,12 @@ void Graph::turnToCompleteGraph()
 void Graph::findShortestPaths()
 {
     QList<QString> vertices_labels= m_vertices.keys();
-    QHash<QString, QHash<QString, QString>* > PI;
+    QHash<QString, QHash<QString, QString> > PI;
 
     // init PI
     foreach(QString label_i, vertices_labels)
     {
-        PI.insert(label_i, new QHash<QString, QString>());
+        PI.insert(label_i, QHash<QString, QString>());
         foreach(QString label_j, vertices_labels)
         {
 
@@ -67,7 +67,15 @@ void Graph::findShortestPaths()
                 int d_ik weight = d(label_i, label_k)->weight();
                 int d_kj weight = d(label_k, label_j)->weight();
 
-                d(label_i, label_j)->setWeight(qMin(d_ij_weight, dik_weight + dkj_weight));
+                if(d_ij_weight <= dik_weight + dkj_weight)
+                {
+                    d(label_i, label_j)->setWeight(d_ij_weight);
+                }
+                else
+                {
+                    d(label_i, label_j)->setWeight(dik_weight + dkj_weight);
+                    PI[label_i][label_j] = PI[label_k][label_j];
+                }
             }
         }
     }
