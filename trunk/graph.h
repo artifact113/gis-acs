@@ -60,7 +60,7 @@ namespace GIS {
 		Graph();
 		Vertex *createVertex(const QString &label);
 		Vertex *vertex(const QString &label) const;
-        void turnToCompleteGraph();
+//        void turnToCompleteGraph();
         void findShortestPaths();
         QList<Vertex*> getPath(Vertex* from, Vertex* to);
 

@@ -15,26 +15,26 @@ Graph::Graph()
 {
 }
 
-void Graph::turnToCompleteGraph()
-{
-    QList<QString> vertices_labels= m_vertices.keys();
+//void Graph::turnToCompleteGraph()
+//{
+//    QList<QString> vertices_labels= m_vertices.keys();
 
-    // turn to graph complate
-    foreach (const QString &label_from, vertices_labels)
-    {
-        Vertex* v_from = m_vertices.value(label_from);
+//    // turn to graph complate
+//    foreach (const QString &label_from, vertices_labels)
+//    {
+//        Vertex* v_from = m_vertices.value(label_from);
 
-        foreach (const QString &label_to, vertices_labels)
-        {
-            Vertex* v_to = m_vertices.value(label_to);
+//        foreach (const QString &label_to, vertices_labels)
+//        {
+//            Vertex* v_to = m_vertices.value(label_to);
 
-            if(v_from->edgeTo(v_to) == NULL)
-            {
-                v_from->connectTo(v_to, infinity);
-            }
-        }
-    }
-}
+//            if(v_from->edgeTo(v_to) == NULL)
+//            {
+//                v_from->connectTo(v_to, infinity);
+//            }
+//        }
+//    }
+//}
 
 // Implementation of Floyd-Warshall algorithm
 void Graph::findShortestPaths()
@@ -294,6 +294,14 @@ Edge *Vertex::connectTo(Vertex *v, int weight)
 	v->m_connectedVertices.insert(this, edge);
 	return edge;
 }
+
+Edge* Vertex::virtuallyConnectTo(Vertex *v, int weight)
+{
+    Edge* e = connectTo(v, weight);
+    e->turnToVirtual();
+    return e;
+}
+
 Vertex* Vertex::previous(QString from)
 {
     return m_previous[from];
