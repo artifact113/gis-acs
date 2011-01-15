@@ -1,11 +1,12 @@
 #include <QtGui>
 #include <QtDebug>
 #include "graph.h"
+#include "graphmodel.h"
 
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
-	QLabel label("GIS Project");
+	QTreeView treeView;
 
 	QString filename;
 	GIS::Graph *graph = new GIS::Graph;
@@ -23,7 +24,6 @@ int main(int argc, char *argv[])
 	}
 	qDebug() << "graph->readFromFile() returned:" << graph->readFromFile(filename);
 	qDebug() << "graph->vertices().size() =" << graph->vertices().size();
-	label.showMaximized();
 
 	//graph->turnToCompleteGraph();
 	graph->findShortestPaths();
@@ -40,6 +40,11 @@ int main(int argc, char *argv[])
 		qDebug() << v->label();
 	}
 
+	GIS::GraphModel model;
+	model.setGraph(graph);
+
+	treeView.setModel(&model);
+	treeView.showMaximized();
 
 	return app.exec();
 }

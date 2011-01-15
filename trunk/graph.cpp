@@ -104,7 +104,7 @@ void Graph::printGraph()
 {
     foreach(Vertex* from, m_vertices)
     {
-        qDebug() << "Wierzcho³ek: " << from->label();
+		qDebug() << "Wierzcholek: " << from->label();
 
         foreach(Vertex* to, from->connectedVertices())
         {
