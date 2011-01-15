@@ -80,11 +80,18 @@ void Graph::findShortestPaths()
 						else if(d_ij_weight > d_ik_weight + d_kj_weight)
 						{
 							if(d_ij_weight != infinity)
+                            {
 								d(label_i, label_j)->setWeight(d_ik_weight + d_kj_weight);
+                                m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
+                                m_vertices[label_i]->setPrevious(label_j, m_vertices[label_i]->previous(label_k));
+                            }
 							else
+                            {
 								vertex(label_i)->virtuallyConnectTo(vertex(label_j), d_ik_weight + d_kj_weight);
+                                m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
+                            }
 
-							m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
+                            //m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
 						}
 					}
 				}
@@ -95,39 +102,42 @@ void Graph::findShortestPaths()
 
 void Graph::printGraph()
 {
-	foreach(Vertex* from, m_vertices)
-	{
-		qDebug() << "Wierzchołek: " << from->label();
+    foreach(Vertex* from, m_vertices)
+    {
+        qDebug() << "Wierzcho�ek: " << from->label();
 
-		foreach(Vertex* to, from->connectedVertices())
-		{
-			qDebug() << from->label()<< " " << to->label() << " : " << from->edgeTo(to)->weight() << " " << from->edgeTo(to)->isVirtual();
-		}
-	}
+        foreach(Vertex* to, from->connectedVertices())
+        {
+            QString path_str;
+            QList<Vertex*> path = getPath(from, to);
+            foreach(Vertex* path_elem, path)
+            {
+                path_str.append(" ").append(path_elem->label());
+            }
+
+            qDebug() << from->label()<< " " << to->label() << " : " << from->edgeTo(to)->weight() << " " << from->edgeTo(to)->isVirtual() << "\t" << path_str;
+        }
+    }
 }
 
 QList<Vertex*> Graph::getPath(Vertex* from, Vertex* to)
 {
-	QList<Vertex*> result_path;
+    QList<Vertex*> result_path;
 
-	if(from->label() == to->label())
-	{
-		result_path.append(from);
-	}
-	else
-	{
-		if(to->previous(from->label()) == NULL)
-		{
-			qDebug() << "nie istnieje ścieżka z " << from->label() << " do " << to->label();
-		}
-		else
-		{
-			result_path = getPath(from, to->previous(from->label()));
-			result_path.append(to);
-		}
-	}
+    if(from->label() == to->label())
+    {
+        result_path.append(from);
+    }
+    else
+    {
+        if(to->previous(from->label()) != NULL)
+        {
+            result_path = getPath(from, to->previous(from->label()));
+            result_path.append(to);
+        }
+    }
 
-	return result_path;
+    return result_path;
 }
 
 Edge* Graph::d(QString label_i, QString label_j)
