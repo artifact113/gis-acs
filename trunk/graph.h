@@ -62,6 +62,7 @@ namespace GIS {
 		Vertex *vertex(const QString &label) const;
         void turnToCompleteGraph();
         void findShortestPaths();
+        QList<Vertex*> getPath(Vertex* from, Vertex* to);
 
 		QList<Vertex *> vertices() const;
 		bool isConnected() const;
