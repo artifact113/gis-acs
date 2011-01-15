@@ -31,20 +31,61 @@ void Graph::turnToCompleteGraph()
     }
 }
 
+// Implementation of Floyd-Warshall algorithm
 void Graph::findShortestPaths()
 {
     QList<QString> vertices_labels= m_vertices.keys();
+    QHash<QString, QHash<QString, QString>* > PI;
 
-    foreach (const QString &label_from, vertices_labels)
+    // init PI
+    foreach(QString label_i, vertices_labels)
     {
-        dijkstraVertex(m_vertices.value(label_from));
+        PI.insert(label_i, new QHash<QString, QString>());
+        foreach(QString label_j, vertices_labels)
+        {
+
+            if(label_i == label_j || d(label_i, label_j)->weight() == INT_MAX)
+            {
+                PI.value(label_i)->insert(label_j, "");
+            }
+            else
+            {
+                PI.value(label_i)->insert(label_j, label_i);
+            }
+
+        }
     }
+
+    // find shortest paths and fill PI
+    foreach(QString label_k, vertices_labels)
+    {
+        foreach(QString label_i, vertices_labels)
+        {
+            foreach(QString label_j, vertices_labels)
+            {
+                int d_ij weight = d(label_i, label_j)->weight();
+                int d_ik weight = d(label_i, label_k)->weight();
+                int d_kj weight = d(label_k, label_j)->weight();
+
+                d(label_i, label_j)->setWeight(qMin(d_ij_weight, dik_weight + dkj_weight));
+            }
+        }
+    }
+
+    // extract paths from PI and update edges in graph
+
+
+}
+
+Edge* Graph::d(QString label_i, QString label_j)
+{
+    return m_vertices.value(label_i)->edgeTo(m_vertices.value(label_j));
 }
 
 void Graph::dijkstraVertex(Vertex *v) const
 {
-	QList<Vertex*> remaining_vertexes = m_vertices;
-	QHash<Vertex*, QPair< qint32, QList<Edge*> > > paths;
+/*    QList<Vertex*> remaining_vertexes = m_vertices;
+    QHash<Vertex*, QPair< qint32, QList<Edge*> > > paths;
 
     // init to INT_MAX
     foreach(Vertex* v, m_vertices)
@@ -70,7 +111,7 @@ void Graph::dijkstraVertex(Vertex *v) const
         remaining_vertexes.removeAt(curr_vertex_index);
 
         //
-    }
+    }*/
 }
 
 Vertex *Graph::createVertex(const QString &label)
@@ -245,6 +286,16 @@ Vertex *Edge::endPoint() const
 int Edge::weight() const
 {
 	return m_weight;
+}
+
+void Edge::setWeight(int weight)
+{
+    m_weight = weight;
+}
+
+void Edge::turnToVirtual(QList<QString>& m_virtual_path)
+{
+
 }
 
 } // namespace GIS

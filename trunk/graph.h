@@ -38,11 +38,14 @@ namespace GIS {
 		Vertex *startPoint() const;
 		Vertex *endPoint() const;
 		int weight() const;
+                void setWeight(int weight);
 		bool isVirtual() const;
+                void turnToVirtual(QList<QString>& m_virtual_path);
 
 		friend class Graph;
 		friend class Vertex;
 	private:
+                QList<QString> m_virtual_path;
 		Graph *m_graph;
 		Vertex *m_start;
 		Vertex *m_end;
@@ -58,12 +61,14 @@ namespace GIS {
 		Vertex *vertex(const QString &label) const;
         void turnToCompleteGraph();
         void findShortestPaths();
+
 		QList<Vertex *> vertices() const;
 		bool isConnected() const;
 		bool readFromFile(const QString &filename);
 	private:
 		void dfsTraverseFrom(Vertex *v) const;
         void dijkstraVertex(Vertex *v) const;
+        Edge* d(QString label_i, QString label_j);
 	private:
 		QHash<QString, Vertex *> m_vertices;
 		mutable QList<Vertex *> m_visited;
