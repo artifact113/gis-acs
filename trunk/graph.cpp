@@ -9,7 +9,7 @@ namespace GIS {
 static const int infinity = 10000000;
 
 /*!
-  \class Graph
+\class Graph
 */
 Graph::Graph()
 {
@@ -39,135 +39,132 @@ Graph::Graph()
 // Implementation of Floyd-Warshall algorithm
 void Graph::findShortestPaths()
 {
-    QList<QString> vertices_labels= m_vertices.keys();
+	QList<QString> vertices_labels= m_vertices.keys();
 
-    // init PI
-    foreach(QString label_i, vertices_labels)
-    {
-        foreach(QString label_j, vertices_labels)
-        {
-            if(label_i != label_j && d(label_i, label_j) != NULL/*&& d(label_i, label_j)->weight()*/)
-            {
-                qDebug() << label_i << " " << label_j;
-                m_vertices[label_j]->setPrevious(label_i, m_vertices[label_i]);
-            }
-        }
-    }
+	// init PI
+	foreach(QString label_i, vertices_labels)
+	{
+		foreach(QString label_j, vertices_labels)
+		{
+			if(label_i != label_j && d(label_i, label_j) != NULL/*&& d(label_i, label_j)->weight()*/)
+			{
+				qDebug() << label_i << " " << label_j;
+				m_vertices[label_j]->setPrevious(label_i, m_vertices[label_i]);
+			}
+		}
+	}
 
-    // find shortest paths and fill PI
-    foreach(QString label_k, vertices_labels)
-    {
-        foreach(QString label_i, vertices_labels)
-        {
-            if(label_i != label_k)
-            {
-                foreach(QString label_j, vertices_labels)
-                {
-                    if(label_i != label_j && label_j != label_k)
-                    {
-                        Edge* d_ij = d(label_i, label_j);
-                        Edge* d_ik = d(label_i, label_k);
-                        Edge* d_kj = d(label_k, label_j);
+	// find shortest paths and fill PI
+	foreach(QString label_k, vertices_labels)
+	{
+		foreach(QString label_i, vertices_labels)
+		{
+			if(label_i != label_k)
+			{
+				foreach(QString label_j, vertices_labels)
+				{
+					if(label_i != label_j && label_j != label_k)
+					{
+						Edge* d_ij = d(label_i, label_j);
+						Edge* d_ik = d(label_i, label_k);
+						Edge* d_kj = d(label_k, label_j);
 
-                        int d_ij_weight = d_ij == NULL ? infinity : d_ij->weight();
-                        int d_ik_weight = d_ik == NULL ? infinity : d_ik->weight();
-                        int d_kj_weight = d_kj == NULL ? infinity : d_kj->weight();
+						int d_ij_weight = d_ij == NULL ? infinity : d_ij->weight();
+						int d_ik_weight = d_ik == NULL ? infinity : d_ik->weight();
+						int d_kj_weight = d_kj == NULL ? infinity : d_kj->weight();
 
-                        if(d_ij_weight <= d_ik_weight + d_kj_weight && d_ij_weight != infinity)
-                        {
-                            d(label_i, label_j)->setWeight(d_ij_weight);
-                        }
-                        else if(d_ij_weight > d_ik_weight + d_kj_weight)
-                        {
-                            if(d_ij_weight != infinity)
-                                d(label_i, label_j)->setWeight(d_ik_weight + d_kj_weight);
-                            else
-                                vertex(label_i)->virtuallyConnectTo(vertex(label_j), d_ik_weight + d_kj_weight);
+						if(d_ij_weight <= d_ik_weight + d_kj_weight && d_ij_weight != infinity)
+						{
+							d(label_i, label_j)->setWeight(d_ij_weight);
+						}
+						else if(d_ij_weight > d_ik_weight + d_kj_weight)
+						{
+							if(d_ij_weight != infinity)
+								d(label_i, label_j)->setWeight(d_ik_weight + d_kj_weight);
+							else
+								vertex(label_i)->virtuallyConnectTo(vertex(label_j), d_ik_weight + d_kj_weight);
 
-                            m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
-                        }
-                    }
-                }
-            }
-        }
-    }
+							m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 void Graph::printGraph()
 {
-    foreach(Vertex* from, m_vertices)
-    {
-        qDebug() << "Wierzcho�ek: " << from->label();
+	foreach(Vertex* from, m_vertices)
+	{
+		qDebug() << "Wierzchołek: " << from->label();
 
-        foreach(Vertex* to, from->connectedVertices())
-        {
-            QString path_str;
-            QList<Vertex*> path = getPath(from, to);
-            foreach(Vertex* path_elem, path)
-            {
-                path_str.append(" ").append(path_elem->label());
-            }
-
-            qDebug() << from->label()<< " " << to->label() << " : " << from->edgeTo(to)->weight() << " " << from->edgeTo(to)->isVirtual() << "\t" << path_str;
-        }
-    }
+		foreach(Vertex* to, from->connectedVertices())
+		{
+			qDebug() << from->label()<< " " << to->label() << " : " << from->edgeTo(to)->weight() << " " << from->edgeTo(to)->isVirtual();
+		}
+	}
 }
 
 QList<Vertex*> Graph::getPath(Vertex* from, Vertex* to)
 {
-    QList<Vertex*> result_path;
+	QList<Vertex*> result_path;
 
-    if(from->label() == to->label())
-    {
-        result_path.append(from);
-    }
-    else
-    {
-        if(to->previous(from->label()) != NULL)
-        {
-            result_path = getPath(from, to->previous(from->label()));
-            result_path.append(to);
-        }
-    }
+	if(from->label() == to->label())
+	{
+		result_path.append(from);
+	}
+	else
+	{
+		if(to->previous(from->label()) == NULL)
+		{
+			qDebug() << "nie istnieje ścieżka z " << from->label() << " do " << to->label();
+		}
+		else
+		{
+			result_path = getPath(from, to->previous(from->label()));
+			result_path.append(to);
+		}
+	}
 
-    return result_path;
+	return result_path;
 }
 
 Edge* Graph::d(QString label_i, QString label_j)
 {
-    return m_vertices.value(label_i)->edgeTo(m_vertices.value(label_j));
+	return m_vertices.value(label_i)->edgeTo(m_vertices.value(label_j));
 }
 
 void Graph::dijkstraVertex(Vertex *v) const
 {
-/*    QList<Vertex*> remaining_vertexes = m_vertices;
-    QHash<Vertex*, QPair< qint32, QList<Edge*> > > paths;
+	/*    QList<Vertex*> remaining_vertexes = m_vertices;
+QHash<Vertex*, QPair< qint32, QList<Edge*> > > paths;
 
-    // init to INT_MAX
-    foreach(Vertex* v, m_vertices)
-    {
-        paths.insert(v, QPair(INT_MAX, QList()));
-    }
+// init to INT_MAX
+foreach(Vertex* v, m_vertices)
+{
+paths.insert(v, QPair(INT_MAX, QList()));
+}
 
-    // find shortest paths
-    while(!vertices.empty())
-    {
-        // pick the vertice from remaining group with shortest path;
-        Vertex* curr_vertex = remaining_vertexes.at(0);
-        int curr_vertex_index = 0;
-        for(int i = 0; i < remaining_vertexes.size(); ++i)
-        {
-            if(v->edgeTo(remaining_vertexes.at(i))->weight() < v->edgeTo(curr_vertex)->weight())
-            {
-                curr_vertex = remaining_vertexes.at(i);
-            }
-        }
+// find shortest paths
+while(!vertices.empty())
+{
+// pick the vertice from remaining group with shortest path;
+Vertex* curr_vertex = remaining_vertexes.at(0);
+int curr_vertex_index = 0;
+for(int i = 0; i < remaining_vertexes.size(); ++i)
+{
+if(v->edgeTo(remaining_vertexes.at(i))->weight() < v->edgeTo(curr_vertex)->weight())
+{
+curr_vertex = remaining_vertexes.at(i);
+}
+}
 
-        // remove picked vertex from remaining list
-        remaining_vertexes.removeAt(curr_vertex_index);
+// remove picked vertex from remaining list
+remaining_vertexes.removeAt(curr_vertex_index);
 
-        //
-    }*/
+//
+}*/
 }
 
 Vertex *Graph::createVertex(const QString &label)
@@ -271,8 +268,33 @@ bool Graph::readFromFile(const QString &filename)
 	return true;
 }
 
+bool Graph::saveToFile(const QString &filename) const
+{
+	QFile file(filename);
+	if (!file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
+		qWarning("Cannot open file!");
+		return false;
+	}
+	QSet<Edge *> set;
+	QList<Vertex *> verts = vertices();
+	foreach (Vertex *v, verts) {
+		QList<Edge *> edges = v->edges();
+		foreach (Edge *e, edges) {
+			set.insert(e);
+		}
+	}
+
+	QDomDocument doc;
+	doc.setContent(QString("<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+						   "<graph></graph>"));
+	QDomElement graphElem = doc.documentElement();
+
+	return false;
+}
+
+
 /*!
-  \class Vertex
+\class Vertex
 */
 Vertex::Vertex(Graph *parentGraph, const QString &label)
 	: m_graph(parentGraph)
@@ -319,23 +341,28 @@ Edge *Vertex::connectTo(Vertex *v, int weight)
 
 Edge* Vertex::virtuallyConnectTo(Vertex *v, int weight)
 {
-    Edge* e = connectTo(v, weight);
-    e->turnToVirtual();
-    return e;
+	Edge* e = connectTo(v, weight);
+	e->turnToVirtual();
+	return e;
 }
 
-Vertex* Vertex::previous(QString from)
+Vertex* Vertex::previous(const QString &from)
 {
-    return m_previous[from];
+	return m_previous[from];
 }
 
-void Vertex::setPrevious(QString from, Vertex* previous)
+void Vertex::setPrevious(const QString &from, Vertex* previous)
 {
-    m_previous[from] = previous;
+	m_previous[from] = previous;
+}
+
+QList<Edge *> Vertex::edges() const
+{
+	return m_connectedVertices.values();
 }
 
 /*!
-  \class Edge
+\class Edge
 */
 Edge::Edge(Graph *parentGraph, Vertex *s, Vertex *e, int weight, bool virtual_)
 	: m_graph(parentGraph)
@@ -363,17 +390,17 @@ int Edge::weight() const
 
 bool Edge::isVirtual() const
 {
-    return m_virtual;
+	return m_virtual;
 }
 
 void Edge::setWeight(int weight)
 {
-    m_weight = weight;
+	m_weight = weight;
 }
 
 void Edge::turnToVirtual()
 {
-    m_virtual= true;
+	m_virtual= true;
 }
 
 } // namespace GIS
