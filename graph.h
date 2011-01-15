@@ -21,10 +21,12 @@ namespace GIS {
 		Edge *connectTo(Vertex *v, int weight);
 		Edge *virtuallyConnectTo(Vertex *v, int weight);
 		void turnToVirtual();
+                Vertex* previous(QString from);
+                void setPrevious(QString from, Vertex* previous);
 
 		friend class Graph;
 	private:
-		QList<Edge*> m_virtualPath;
+                QHash<QString, Vertex*> m_previous;
 		Graph *m_graph;
 		QString m_label;
 		QHash<Vertex *, Edge *> m_connectedVertices;
@@ -40,13 +42,12 @@ namespace GIS {
 		int weight() const;
                 void setWeight(int weight);
 		bool isVirtual() const;
-                void turnToVirtual(QList<QString>& m_virtual_path);
+                void turnToVirtual();
 
 		friend class Graph;
 		friend class Vertex;
 	private:
-                QList<QString> m_virtual_path;
-		Graph *m_graph;
+                Graph *m_graph;
 		Vertex *m_start;
 		Vertex *m_end;
 		int m_weight;
