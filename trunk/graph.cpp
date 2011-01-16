@@ -43,9 +43,17 @@ void Graph::findShortestPaths()
 		}
 	}
 
-	// find shortest paths and fill PI
-	foreach(QString label_k, vertices_labels)
-	{
+    int iteration = 0;
+    // find shortest paths and fill PI
+    foreach(QString label_k, vertices_labels)
+    {
+        // print graph
+        qDebug() << "\n**************************************************";
+        qDebug() << "Iteracja: " << ++iteration;
+        qDebug() << "**************************************************";
+        printGraph();
+
+        ++iteration;
 		foreach(QString label_i, vertices_labels)
 		{
 			if(label_i != label_k)
@@ -64,7 +72,7 @@ void Graph::findShortestPaths()
 
 						if(d_ij_weight <= d_ik_weight + d_kj_weight && d_ij_weight != infinity)
 						{
-							d(label_i, label_j)->setWeight(d_ij_weight);
+                            d(label_i, label_j)->setWeight(d_ij_weight);
 						}
 						else if(d_ij_weight > d_ik_weight + d_kj_weight)
 						{
@@ -76,8 +84,11 @@ void Graph::findShortestPaths()
                             }
 							else
                             {
+                                qDebug() << "Virtual: " << label_i << "-> " << label_j;
 								vertex(label_i)->virtuallyConnectTo(vertex(label_j), d_ik_weight + d_kj_weight);
+
                                 m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
+                                m_vertices[label_i]->setPrevious(label_j, m_vertices[label_i]->previous(label_k));
                             }
 
                             //m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
