@@ -6,39 +6,67 @@
 
 namespace GIS {
 
-class ACS
-{
-
-
-public:
-    ACS(Graph* g);
-
-    Path acs();
-
-private:
-    void init();
-    void iteration();
-    void localUpdate();
-    void globalUpdate();
-    Path shortestPath();
-
-    QList<Ant* > ants;
-    Graph* graph;
-    static const int N = 100;
-};
-
 class Ant
 {
 public:
     void step();
     void localUpdate();
-    Ant(QList<Vertex*> &cities);
+    Ant(QList<Vertex*> verties);
 
 private:
     Vertex* homeCity;
     QList<Vertex* > remainingCities;
     QList<Vertex* > tour;
 };
+
+class ACS
+{
+
+public:
+    ACS(Graph* g)
+    {
+        m_graph = g;
+    }
+
+    Path acs()
+    {
+        init();
+        for(int i = 0; i < ITER_N; ++i)
+        {
+            for(int i = 0; i < m_graph->vertices().size(); ++i)
+            {
+                iteration();
+                localUpdate();
+            }
+            globalUpdate();
+            updateBest();
+        }
+        return shortestPath();
+    }
+
+private:
+    void init()
+    {
+        // Create Ants
+        for(int i = 0; i < ANT_N; ++i)
+        {
+            m_ants.append(new Ant(g->vertices()));
+        }
+    }
+
+    void iteration();
+    void localUpdate();
+    void globalUpdate();
+    void updateBest();
+    Path shortestPath();
+
+    QList<Ant* > m_ants;
+    Graph* m_graph;
+    static const int ANT_N = 100;
+    static const int ITER_N = 100;
+};
+
+
 
 struct ACSData {
 
