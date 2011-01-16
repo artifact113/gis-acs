@@ -32,6 +32,7 @@ void GraphModel::setGraph(Graph *graph)
 
 int GraphModel::columnCount(const QModelIndex &parent) const
 {
+	Q_UNUSED(parent);
 	return 4;
 }
 
