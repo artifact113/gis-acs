@@ -40,6 +40,14 @@ int main(int argc, char *argv[])
 		qDebug() << v->label();
 	}
 
+	GIS::Path *shortestPath = graph->tpsPath();
+	if (shortestPath) {
+		qDebug() << "shortes path total cost =" << shortestPath->totalCost();
+		qDebug() << "path contains:";
+		foreach (GIS::Vertex *v, shortestPath->vertices()) {
+			qDebug() << v->label();
+		}
+	}
 	GIS::GraphModel model;
 	model.setGraph(graph);
 

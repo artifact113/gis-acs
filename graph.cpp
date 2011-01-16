@@ -28,7 +28,7 @@ public:
         m_graph = g;
     }
 
-    Path acs()
+	Path *acs()
     {
         init();
         for(int i = 0; i < ITER_N; ++i)
@@ -50,7 +50,7 @@ private:
         // Create Ants
         for(int i = 0; i < ANT_N; ++i)
         {
-            m_ants.append(new Ant(g->vertices()));
+			m_ants.append(new Ant(m_graph->vertices()));
         }
     }
 
@@ -58,7 +58,7 @@ private:
     void localUpdate();
     void globalUpdate();
     void updateBest();
-    Path shortestPath();
+	Path *shortestPath();
 
     QList<Ant* > m_ants;
     Graph* m_graph;
@@ -76,7 +76,42 @@ struct ACSData {
 
 struct BruteForceData {
 	BruteForceData() {}
+	QList<QList<Vertex *> > permutations;
+	void addElement(Vertex *v) {
+		if (permutations.isEmpty()) {
+			permutations.append(QList<Vertex *>() << v);
+			return;
+		}
+		if (permutations.size() == 1) {
+			permutations.append(permutations.first());
+			permutations.first().append(v);
+			permutations.last().prepend(v);
+			return;
+		}
+		int count = permutations.first().size() + 1;
+		QList<QList<Vertex *> > newPerms;
+		foreach (const QList<Vertex *> &perm, permutations) {
+			for (int i = 0; i < count; ++i) newPerms.append(perm);
+		}
+
+		bool dir = true;
+		for (int i = 0; i < newPerms.size(); ++i) {
+			int index = dir ? (count - (i % count) - 1) : (i % count);
+			newPerms[i].insert(index, v);
+			if (!index && dir) {
+				dir = false;
+			}
+			if (index == count - 1 && !dir) {
+				dir = true;
+			}
+		}
+		permutations = newPerms;
+	}
 };
+
+bool pathLessThan(Path *p1, Path *p2) {
+	return p1->totalCost() < p2->totalCost();
+}
 
 static const int infinity = 10000000;
 
@@ -350,7 +385,28 @@ Path *Graph::tpsPath_ACS()
 
 Path *Graph::tpsPath_BruteForce()
 {
-	return 0;
+	if (m_bfData) {
+		delete m_bfData;
+	}
+
+	m_bfData = new BruteForceData;
+	foreach (Vertex *v, m_vertices.values()) {
+		m_bfData->addElement(v);
+	}
+
+	QList<Path *> paths;
+	foreach (const QList<Vertex *> &perm, m_bfData->permutations) {
+		Path *path = new Path(this);
+		foreach (Vertex *v, perm) {
+			path->appendVertex(v);
+		}
+		path->appendVertex(perm.first());
+		paths.append(path);
+	}
+
+	qSort(paths.begin(), paths.end(), pathLessThan);
+
+	return paths.first();
 }
 
 /*!
