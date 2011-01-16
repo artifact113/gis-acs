@@ -8,6 +8,8 @@ namespace GIS {
 
 class ACS
 {
+
+
 public:
     ACS(Graph* g);
 
@@ -22,6 +24,7 @@ private:
 
     QList<Ant* > ants;
     Graph* graph;
+    static const int N = 100;
 };
 
 class Ant
