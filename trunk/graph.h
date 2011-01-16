@@ -8,6 +8,8 @@ namespace GIS {
 
 class Graph;
 class Edge;
+class ACSData;
+class BruteForceData;
 
 class Vertex
 {
@@ -55,27 +57,54 @@ private:
 	bool m_virtual;
 };
 
+class Path
+{
+private:
+	Path(Graph *parentGraph);
+	bool appendVertex(Vertex *v);
+	bool setVertices(const QList<Vertex *> &verts);
+public:
+	QList<Vertex *> vertices() const;
+	int totalCost() const;
+	bool isValid() const;
+
+	friend class Graph;
+private:
+	Graph *m_graph;
+	QList<Vertex *> m_vertices;
+	int m_total;
+};
+
 class Graph
 {
 public:
+	enum TpsType {
+		BruteForce,
+		ACS
+	};
+
 	Graph();
 	Vertex *createVertex(const QString &label);
 	Vertex *vertex(const QString &label) const;
-	//        void turnToCompleteGraph();
 	void findShortestPaths();
-	QList<Vertex*> getPath(Vertex* from, Vertex* to);
+	Path *getPath(Vertex* from, Vertex* to);
 	void printGraph();
 	QList<Vertex *> vertices() const;
 	bool isConnected() const;
 	bool readFromFile(const QString &filename);
 	bool saveToFile(const QString &filename) const;
+
+	Path *tpsPath(TpsType type = BruteForce) const;
 private:
 	void dfsTraverseFrom(Vertex *v) const;
-	void dijkstraVertex(Vertex *v) const;
 	Edge* d(QString label_i, QString label_j);
+	Path *tpsPath_BruteForce();
+	Path *tpsPath_ACS();
 private:
 	QHash<QString, Vertex *> m_vertices;
 	mutable QList<Vertex *> m_visited;
+	ACSData *m_acsData;
+	BruteForceData *m_bfData;
 };
 
 } // namespace GIS

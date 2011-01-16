@@ -6,35 +6,24 @@
 
 namespace GIS {
 
+struct ACSData {
+	ACSData() {}
+};
+
+struct BruteForceData {
+	BruteForceData() {}
+};
+
 static const int infinity = 10000000;
 
 /*!
 \class Graph
 */
 Graph::Graph()
+	: m_acsData(0)
+	, m_bfData(0)
 {
 }
-
-//void Graph::turnToCompleteGraph()
-//{
-//    QList<QString> vertices_labels= m_vertices.keys();
-
-//    // turn to graph complate
-//    foreach (const QString &label_from, vertices_labels)
-//    {
-//        Vertex* v_from = m_vertices.value(label_from);
-
-//        foreach (const QString &label_to, vertices_labels)
-//        {
-//            Vertex* v_to = m_vertices.value(label_to);
-
-//            if(v_from->edgeTo(v_to) == NULL)
-//            {
-//                v_from->connectTo(v_to, infinity);
-//            }
-//        }
-//    }
-//}
 
 // Implementation of Floyd-Warshall algorithm
 void Graph::findShortestPaths()
@@ -109,8 +98,8 @@ void Graph::printGraph()
         foreach(Vertex* to, from->connectedVertices())
         {
             QString path_str;
-            QList<Vertex*> path = getPath(from, to);
-            foreach(Vertex* path_elem, path)
+			Path *path = getPath(from, to);
+			foreach(Vertex* path_elem, path->vertices())
             {
                 path_str.append(" ").append(path_elem->label());
             }
@@ -120,61 +109,28 @@ void Graph::printGraph()
     }
 }
 
-QList<Vertex*> Graph::getPath(Vertex* from, Vertex* to)
+Path *Graph::getPath(Vertex* from, Vertex* to)
 {
-    QList<Vertex*> result_path;
+	if(from->label() == to->label())
+	{
+		Path *result_path = new Path(this);
+		result_path->appendVertex(from);
+		return result_path;
+	}
 
-    if(from->label() == to->label())
-    {
-        result_path.append(from);
-    }
-    else
-    {
-        if(to->previous(from->label()) != NULL)
-        {
-            result_path = getPath(from, to->previous(from->label()));
-            result_path.append(to);
-        }
-    }
+	if(to->previous(from->label()) != NULL)
+	{
+		Path *result_path = getPath(from, to->previous(from->label()));
+		result_path->appendVertex(to);
+		return result_path;
+	}
 
-    return result_path;
+	return new Path(this);
 }
 
 Edge* Graph::d(QString label_i, QString label_j)
 {
 	return m_vertices.value(label_i)->edgeTo(m_vertices.value(label_j));
-}
-
-void Graph::dijkstraVertex(Vertex *v) const
-{
-	/*    QList<Vertex*> remaining_vertexes = m_vertices;
-QHash<Vertex*, QPair< qint32, QList<Edge*> > > paths;
-
-// init to INT_MAX
-foreach(Vertex* v, m_vertices)
-{
-paths.insert(v, QPair(INT_MAX, QList()));
-}
-
-// find shortest paths
-while(!vertices.empty())
-{
-// pick the vertice from remaining group with shortest path;
-Vertex* curr_vertex = remaining_vertexes.at(0);
-int curr_vertex_index = 0;
-for(int i = 0; i < remaining_vertexes.size(); ++i)
-{
-if(v->edgeTo(remaining_vertexes.at(i))->weight() < v->edgeTo(curr_vertex)->weight())
-{
-curr_vertex = remaining_vertexes.at(i);
-}
-}
-
-// remove picked vertex from remaining list
-remaining_vertexes.removeAt(curr_vertex_index);
-
-//
-}*/
 }
 
 Vertex *Graph::createVertex(const QString &label)
@@ -302,6 +258,32 @@ bool Graph::saveToFile(const QString &filename) const
 	return false;
 }
 
+Path *Graph::tpsPath(TpsType type) const
+{
+	if (!m_vertices.size()) {
+		qDebug() << Q_FUNC_INFO << "Graph is empty!";
+		return 0;
+	}
+
+	switch (type) {
+	case BruteForce:
+		return const_cast<Graph *>(this)->tpsPath_BruteForce();
+	case ACS:
+		return const_cast<Graph *>(this)->tpsPath_ACS();
+	}
+
+	return 0;
+}
+
+Path *Graph::tpsPath_ACS()
+{
+	return 0;
+}
+
+Path *Graph::tpsPath_BruteForce()
+{
+	return 0;
+}
 
 /*!
 \class Vertex
@@ -411,6 +393,66 @@ void Edge::setWeight(int weight)
 void Edge::turnToVirtual()
 {
 	m_virtual= true;
+}
+
+/*!
+\class Path
+*/
+Path::Path(Graph *parentGraph)
+	: m_graph(parentGraph)
+	, m_total(0)
+{
+}
+
+bool Path::appendVertex(Vertex *v)
+{
+	if (!m_vertices.size()) {
+		m_vertices.append(v);
+		return true;
+	}
+	Vertex *prev = m_vertices.last();
+	if (prev == v) {
+		qDebug("Cannot add same vertex in path just after itself");
+		return false;
+	}
+	m_vertices.append(v);
+	Edge *e = prev->edgeTo(v);
+	if (!e) {
+		qDebug("No such edge!");
+		return false;
+	}
+	m_total += e->weight();
+	return true;
+}
+
+bool Path::setVertices(const QList<Vertex *> &verts)
+{
+	m_total = 0;
+	m_vertices.clear();
+	foreach (Vertex *v, verts) {
+		bool result = appendVertex(v);
+		if (!result) {
+			m_total = 0;
+			m_vertices.clear();
+			return false;
+		}
+	}
+	return true;
+}
+
+QList<Vertex *> Path::vertices() const
+{
+	return m_vertices;
+}
+
+int Path::totalCost() const
+{
+	return m_total;
+}
+
+bool Path::isValid() const
+{
+	return !m_vertices.isEmpty();
 }
 
 } // namespace GIS

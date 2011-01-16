@@ -31,11 +31,11 @@ int main(int argc, char *argv[])
 	graph->printGraph();
 
 	qDebug() << graph->vertex("A")->edgeTo(graph->vertex("E"))->weight();
-	QList<GIS::Vertex*> test = graph->getPath(graph->vertex("A"), graph->vertex("E"));
+	GIS::Path *test = graph->getPath(graph->vertex("A"), graph->vertex("E"));
 
-	qDebug() << "rozmiar sciezki: " << test.size();
+	qDebug() << "rozmiar sciezki: " << test->vertices().size();
 
-	foreach(GIS::Vertex* v, test)
+	foreach(GIS::Vertex* v, test->vertices())
 	{
 		qDebug() << v->label();
 	}
