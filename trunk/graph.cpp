@@ -6,8 +6,41 @@
 
 namespace GIS {
 
+class ACS
+{
+public:
+    ACS(Graph* g);
+
+    Path acs();
+
+private:
+    void init();
+    void iteration();
+    void localUpdate();
+    void globalUpdate();
+    Path shortestPath();
+
+    QList<Ant* > ants;
+    Graph* graph;
+};
+
+class Ant
+{
+public:
+    void step();
+    void localUpdate();
+    Ant(QList<Vertex*> &cities);
+
+private:
+    Vertex* homeCity;
+    QList<Vertex* > remainingCities;
+    QList<Vertex* > tour;
+};
+
 struct ACSData {
-	ACSData() {}
+
+    QHash<Edge*, double> feromones;
+
 };
 
 struct BruteForceData {
@@ -43,17 +76,9 @@ void Graph::findShortestPaths()
 		}
 	}
 
-    int iteration = 0;
     // find shortest paths and fill PI
     foreach(QString label_k, vertices_labels)
-    {
-        // print graph
-        qDebug() << "\n**************************************************";
-        qDebug() << "Iteracja: " << ++iteration;
-        qDebug() << "**************************************************";
-        printGraph();
-
-        ++iteration;
+    {     
 		foreach(QString label_i, vertices_labels)
 		{
 			if(label_i != label_k)
@@ -79,12 +104,13 @@ void Graph::findShortestPaths()
 							if(d_ij_weight != infinity)
                             {
 								d(label_i, label_j)->setWeight(d_ik_weight + d_kj_weight);
+                                d(label_i, label_j)->turnToVirtual();
                                 m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
                                 m_vertices[label_i]->setPrevious(label_j, m_vertices[label_i]->previous(label_k));
                             }
 							else
                             {
-                                qDebug() << "Virtual: " << label_i << "-> " << label_j;
+                                //qDebug() << "Virtual: " << label_i << "-> " << label_j;
 								vertex(label_i)->virtuallyConnectTo(vertex(label_j), d_ik_weight + d_kj_weight);
 
                                 m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));

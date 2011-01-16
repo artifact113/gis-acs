@@ -10,6 +10,7 @@ class Graph;
 class Edge;
 class ACSData;
 class BruteForceData;
+class ACS;
 
 class Vertex
 {
