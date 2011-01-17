@@ -2,11 +2,12 @@
 #include <QtDebug>
 #include "graph.h"
 #include "graphmodel.h"
+#include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
-	QTreeView treeView;
+	MainWindow w;
 
 	QString filename;
 	GIS::Graph *graph = new GIS::Graph;
@@ -48,11 +49,6 @@ int main(int argc, char *argv[])
 			qDebug() << v->label();
 		}
 	}
-	GIS::GraphModel model;
-	model.setGraph(graph);
-
-	treeView.setModel(&model);
-	treeView.showMaximized();
 
 	return app.exec();
 }
