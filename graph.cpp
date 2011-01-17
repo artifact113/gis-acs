@@ -191,7 +191,7 @@ public:
         m_ACSData->setGraph(g);
     }
 
-	Path *acs()
+    Tour *acs()
     {
         init();
         for(int i = 0; i < ITER_N; ++i)
@@ -200,7 +200,7 @@ public:
             globalUpdate();
 //            updateBest();
         }
-        return shortestPath();
+        return shortestTour();
     }
 
 private:
@@ -296,7 +296,23 @@ private:
         }
     }
 
-	Path *shortestPath();
+    Path* shortestTour()
+    {
+        int Lbest = INT_MAX;
+        Tour* tourBest = NULL;
+
+        for(int k = 0; k < K; ++k)
+        {
+            int Lk = m_ants[k]->tourLength();
+            if(Lk < Lbest)
+            {
+                Lbest = Lk;
+                tourBest = m_ants[k]->tour();
+            }
+        }
+
+        return tourBest;
+    }
 
     QList<Ant* > m_ants;
     Graph* m_graph;
