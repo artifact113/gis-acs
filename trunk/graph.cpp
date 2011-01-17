@@ -107,6 +107,16 @@ public:
         m_tour = new Tour();
     }
 
+    Tour* tour()
+    {
+        return m_tour;
+    }
+
+    int tourLength()
+    {
+        return m_tour->length();
+    }
+
     void step()
     {
         if(!m_remainingVertices.empty())
@@ -274,7 +284,7 @@ private:
         }
 
         // update pheromone
-        QList<Edge*> edges = m_pheromones.keys();
+        QList<Edge*> edges = m_ACSData->edges();
 
         foreach(Edge* e, edges)
         {
