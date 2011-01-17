@@ -7,6 +7,64 @@
 
 namespace GIS {
 
+class ACSData
+{
+private:
+	QHash<Edge*, double> m_pheromones;
+	Graph* m_graph;
+
+public:
+
+	void setGraph(Graph* g)
+	{
+		m_graph = g;
+
+		N = g->vertices().size();
+
+		// init ACSData
+		foreach(Vertex* v, g->vertices())
+		{
+			QList<Edge*> edges = v->edges();
+
+			foreach(Edge* e, edges)
+			{
+				addEdge(e);
+			}
+		}
+	}
+
+	QList<Edge*> edges()
+	{
+		return m_pheromones.keys();
+	}
+
+	void addEdge(Edge* e)
+	{
+		m_pheromones[e] = pheromone0;
+	}
+
+	void addEdge(Edge* e, double pheromone)
+	{
+		m_pheromones[e] = pheromone;
+	}
+
+	double pheromone(Edge* e)
+	{
+		return m_pheromones[e];
+	}
+
+	void setPheromone(Edge* e, double pheromone)
+	{
+		m_pheromones[e] = pheromone;
+	}
+
+	int N;
+	static const int K = 6;
+	static const double BETA = 0.6;
+	static const int pheromone0 = 10;
+	static const double PHI = 0.9;
+};
+
 class Tour
 {
 private:
@@ -98,7 +156,7 @@ private:
 
     double desirability(Edge* e)
     {
-        return m_ACSData->pheromone(e)*qPow(1/e->weight(), BETA);
+		return m_ACSData->pheromone(e)*qPow(1/e->weight(), ACSData::BETA);
     }
 
     Edge* lastStep()
@@ -130,7 +188,7 @@ public:
         {
             acsStep();
             globalUpdate();
-            updateBest();
+//            updateBest();
         }
         return shortestPath();
     }
@@ -150,7 +208,7 @@ private:
         // Create Ants
         for(int i = 0; i < ANT_N; ++i)
         {
-			m_ants.append(new Ant(m_graph->vertices()));
+			m_ants.append(new Ant(m_graph->vertices(), m_ACSData));
         }
     }
 
@@ -242,63 +300,7 @@ private:
     int K;
 };
 
-class ACSData
-{
-private:
-    QHash<Edge*, double> m_pheromones;
-    Graph* m_graph;
 
-public:
-
-    void setGraph(Graph* g)
-    {
-        m_graph = g;
-
-        N = g->vertices().size();
-
-        // init ACSData
-        foreach(Vertex* v, g->vertices())
-        {
-            QList<Edge*> edges = v->edges();
-
-            foreach(Edge* e, edges)
-            {
-                addEdge(e);
-            }
-        }
-    }
-
-    QList<Edge*> edges()
-    {
-        return m_pheromones.keys();
-    }
-
-    void addEdge(Edge* e)
-    {
-        m_pheromones[e] = pheromone0;
-    }
-
-    void addEdge(Edge* e, double pheromone)
-    {
-        m_pheromones[e] = pheromone;
-    }
-
-    double pheromone(Edge* e)
-    {
-        return m_pheromones[e];
-    }
-
-    void setPheromone(Edge* e, double pheromone)
-    {
-        m_pheromones[e] = pheromone;
-    }
-
-    int N;
-    static const int K = 6;
-    static const double BETA = 0.6;
-    static const int pheromone0 = 10;
-    static const double PHI = 0.9;
-};
 
 struct BruteForceData {
 	BruteForceData() {}
@@ -345,8 +347,7 @@ static const int infinity = 10000000;
 \class Graph
 */
 Graph::Graph()
-	: m_acsData(0)
-	, m_bfData(0)
+	: m_bfData(0)
 {
 }
 
