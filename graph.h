@@ -104,7 +104,7 @@ private:
 private:
 	QHash<QString, Vertex *> m_vertices;
 	mutable QList<Vertex *> m_visited;
-	ACSData *m_acsData;
+    //ACSData *m_acsData;
 	BruteForceData *m_bfData;
 };
 

@@ -1,22 +1,116 @@
 #include "graph.h"
 #include <QFile>
+#include <qmath.h>
 #include <QDomDocument>
 #include <QtDebug>
 
 
 namespace GIS {
 
+class Tour
+{
+private:
+    QList<Edge* > m_tour;
+    double m_tourLength;
+
+public:
+    void addStep(Edge* e)
+    {
+        m_tour.append(e);
+        m_tourLength += e->weight();
+    }
+
+    bool contains(Edge* e)
+    {
+        return m_tour.contains(e);
+    }
+
+    double length()
+    {
+        return m_tourLength;
+    }
+
+    Edge* last()
+    {
+        return m_tour.last();
+    }
+};
+
 class Ant
 {
 public:
-    void step();
-    void localUpdate();
-    Ant(QList<Vertex*> verties);
+
+    Ant(QList<Vertex*> vertices, ACSData* acsData)
+    {
+        m_homeVertex = vertices.takeAt(qrand() % vertices.size());
+        m_currentVertex = m_homeVertex;
+        m_remainingVertices = vertices;
+        m_ACSData = acsData;
+        m_tour = new Tour();
+    }
+
+    void step()
+    {
+        if(!m_remainingVertices.empty())
+        {
+            double totalDesirability;
+            QList< QPair<double, Vertex*> > toGo;
+            foreach(Vertex* v, m_remainingVertices)
+            {
+                toGo.append(QPair<double, Vertex*>(desirability(m_currentVertex->edgeTo(v)), v));
+                totalDesirability += desirability(m_currentVertex->edgeTo(v));
+            }
+
+            double rand = (qrand() / RAND_MAX) * totalDesirability;
+
+            bool stop = false;
+            int curr = 0;
+            int index = 0;
+            while(!stop)
+            {
+                if(rand >= curr && rand < curr + toGo[index].first)
+                {
+                    Vertex* v = toGo[index].second;
+                    m_tour->addStep(m_currentVertex->edgeTo(v));
+                    m_currentVertex = toGo[index].second;
+                    m_remainingVertices.removeOne(v);
+                    stop = true;
+                }
+                else
+                    ++index;
+            }
+        }
+        else
+        {
+            m_tour->addStep(m_currentVertex->edgeTo(m_homeVertex));
+            m_currentVertex = m_homeVertex;
+        }
+    }
+
+    void localUpdate()
+    {
+        Edge* e = lastStep();
+        double pheromoneUpdated = (1 - m_ACSData->PHI)*m_ACSData->pheromone(e) + (m_ACSData->PHI*m_ACSData->pheromone0);
+        m_ACSData->setPheromone(e, pheromoneUpdated);
+    }
 
 private:
-    Vertex* homeCity;
-    QList<Vertex* > remainingCities;
-    QList<Vertex* > tour;
+
+    double desirability(Edge* e)
+    {
+        return m_ACSData->pheromone(e)*qPow(1/e->weight(), BETA);
+    }
+
+    Edge* lastStep()
+    {
+        return m_tour->last();
+    }
+
+    Vertex* m_homeVertex;
+    Vertex* m_currentVertex;
+    QList<Vertex* > m_remainingVertices;
+    Tour* m_tour;
+    ACSData* m_ACSData;
 };
 
 class ACS
@@ -25,7 +119,8 @@ class ACS
 public:
     ACS(Graph* g)
     {
-        m_graph = g;
+        m_ACSData = new ACSData();
+        m_ACSData->setGraph(g);
     }
 
 	Path *acs()
@@ -33,11 +128,7 @@ public:
         init();
         for(int i = 0; i < ITER_N; ++i)
         {
-            for(int i = 0; i < m_graph->vertices().size(); ++i)
-            {
-                iteration();
-                localUpdate();
-            }
+            acsStep();
             globalUpdate();
             updateBest();
         }
@@ -45,6 +136,15 @@ public:
     }
 
 private:
+
+    // init()
+    //    For k:=1 to m do
+    //        Let rk1 be the starting city for ant k
+    //        Jk(rk1):= {1, ..., n} - rk1
+    //        /* Jk(rk1) is the set of yet to be visited cities for
+    //        ant k in city rk1 */
+    //        rk:= rk1 /* rk is the city where ant k is located */
+    //    End-fo
     void init()
     {
         // Create Ants
@@ -54,24 +154,150 @@ private:
         }
     }
 
-    void iteration();
-    void localUpdate();
-    void globalUpdate();
-    void updateBest();
+    // acsStep():
+    //    If i<n
+    //    Then
+    //        For k:=1 to m do
+    //            Choose the next city sk according to Eq. (3) and Eq. (1)
+    //            Jk(sk):= Jk(rk) - sk
+    //            Tourk(i):=(rk ,sk)
+    //        End-for
+    //    Else
+    //        For k:=1 to m do
+    //            /* In this cycle all the ants go back to the initial city rk1 */
+    //            sk := rk1
+    //            Tourk(i):=(rk ,sk)
+    //        End-for
+    //    End-if
+    //    /* In this phase local updating occurs and pheromone is
+    //    updated using Eq. (5)*/
+    //    For k:=1 to m do
+    //        t(rk ,sk):=(1-r)t(rk ,sk)+ rt0
+    //        rk := sk /* New city for ant k */
+    //    End-for
+    void acsStep()
+    {
+        for(int i = 0; i < N; ++i)
+        {
+            for(int k = 0; k < K; ++k)
+            {
+                m_ants[k]->step();
+            }
+            for(int k = 0; k < K; ++k)
+            {
+                m_ants[k]->localUpdate();
+            }
+        }
+    }
+
+    // globalUpdate()
+    //    For k:=1 to m do
+    //        Compute Lk /* Lk is the length of the tour done by ant k*/
+    //    End-for
+    //    Compute Lbest
+    //    /*Update edges belonging to Lbest using Eq. (4) */
+    //    For each edge (r,s)
+    //        t(rk ,sk):=(1-a)t( rk ,sk)+ a (Lbest)-1
+    //    End-for
+    void globalUpdate()
+    {
+        int Lbest = INT_MAX;
+        Tour* tourBest = NULL;
+
+        // calculate best tour
+        for(int k = 0; k < K; ++k)
+        {
+            int Lk = m_ants[k]->tourLength();
+            if(Lk < Lbest)
+            {
+                Lbest = Lk;
+                tourBest = m_ants[k]->tour();
+            }
+        }
+
+        // update pheromone
+        QList<Edge*> edges = m_pheromones.keys();
+
+        foreach(Edge* e, edges)
+        {
+            m_ACSData->setPheromone(e, (1 - ALPHA)*m_ACSData->pheromone(e));
+            if(tourBest->contains(e))
+            {
+                m_ACSData->setPheromone(e,  m_ACSData->pheromone(e)+ 1/tourBest->length());
+            }
+        }
+    }
+
 	Path *shortestPath();
 
     QList<Ant* > m_ants;
     Graph* m_graph;
+    ACSData* m_ACSData;
+
     static const int ANT_N = 100;
     static const int ITER_N = 100;
+    static const double ALPHA = 0.6;
+
+    int N;
+    int K;
 };
 
+class ACSData
+{
+private:
+    QHash<Edge*, double> m_pheromones;
+    Graph* m_graph;
 
+public:
 
-struct ACSData {
+    void setGraph(Graph* g)
+    {
+        m_graph = g;
 
-    QHash<Edge*, double> feromones;
+        N = g->vertices().size();
 
+        // init ACSData
+        foreach(Vertex* v, g->vertices())
+        {
+            QList<Edge*> edges = v->edges();
+
+            foreach(Edge* e, edges)
+            {
+                addEdge(e);
+            }
+        }
+    }
+
+    QList<Edge*> edges()
+    {
+        return m_pheromones.keys();
+    }
+
+    void addEdge(Edge* e)
+    {
+        m_pheromones[e] = pheromone0;
+    }
+
+    void addEdge(Edge* e, double pheromone)
+    {
+        m_pheromones[e] = pheromone;
+    }
+
+    double pheromone(Edge* e)
+    {
+        return m_pheromones[e];
+    }
+
+    void setPheromone(Edge* e, double pheromone)
+    {
+        m_pheromones[e] = pheromone;
+    }
+
+    int N;
+    static const int K = 6;
+    static const double BETA = 0.6;
+    static const int pheromone0 = 10;
+    static const double PHI = 0.9;
 };
 
 struct BruteForceData {
