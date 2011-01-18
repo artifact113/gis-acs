@@ -23,32 +23,39 @@ int main(int argc, char *argv[])
 		}
 		filename = app.arguments().at(index);
 	}
-	qDebug() << "graph->readFromFile() returned:" << graph->readFromFile(filename);
-	qDebug() << "graph->vertices().size() =" << graph->vertices().size();
 
-	//graph->turnToCompleteGraph();
-	graph->findShortestPaths();
-
-	graph->printGraph();
-
-	qDebug() << graph->vertex("A")->edgeTo(graph->vertex("E"))->weight();
-	GIS::Path *test = graph->getPath(graph->vertex("A"), graph->vertex("E"));
-
-	qDebug() << "rozmiar sciezki: " << test->vertices().size();
-
-	foreach(GIS::Vertex* v, test->vertices())
-	{
-		qDebug() << v->label();
+	if (!filename.isEmpty()) {
+		w.open(filename);
 	}
 
-	GIS::Path *shortestPath = graph->tpsPath();
-	if (shortestPath) {
-		qDebug() << "shortes path total cost =" << shortestPath->totalCost();
-		qDebug() << "path contains:";
-		foreach (GIS::Vertex *v, shortestPath->vertices()) {
-			qDebug() << v->label();
-		}
-	}
+//	qDebug() << "graph->readFromFile() returned:" << graph->readFromFile(filename);
+//	qDebug() << "graph->vertices().size() =" << graph->vertices().size();
+
+//	//graph->turnToCompleteGraph();
+//	graph->findShortestPaths();
+
+//	graph->printGraph();
+
+//	qDebug() << graph->vertex("A")->edgeTo(graph->vertex("E"))->weight();
+//	GIS::Path *test = graph->getPath(graph->vertex("A"), graph->vertex("E"));
+
+//	qDebug() << "rozmiar sciezki: " << test->vertices().size();
+
+//	foreach(GIS::Vertex* v, test->vertices())
+//	{
+//		qDebug() << v->label();
+//	}
+
+//	GIS::Path *shortestPath = graph->tpsPath();
+//	if (shortestPath) {
+//		qDebug() << "shortes path total cost =" << shortestPath->totalCost();
+//		qDebug() << "path contains:";
+//		foreach (GIS::Vertex *v, shortestPath->vertices()) {
+//			qDebug() << v->label();
+//		}
+//	}
+
+	w.showMaximized();
 
 	return app.exec();
 }

@@ -6,7 +6,8 @@ QT += xml
 HEADERS += \
     graph.h \
     graphmodel.h \
-    mainwindow.h
+    mainwindow.h \
+    singletons.h
 
 SOURCES += \
     graph.cpp \
