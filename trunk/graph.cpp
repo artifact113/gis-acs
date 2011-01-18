@@ -229,6 +229,7 @@ Tour* ACS::acs()
         {
             t = temp;
             Lk = temp->length();
+            qDebug() << "MINNNNNNNNN: " << Lk;
         }
         qDebug() << "acs:: globalUpdate()";
         globalUpdate();
@@ -248,7 +249,7 @@ Tour* ACS::acs()
 void ACS::init()
 {
     // Create Ants
-    for(int i = 0; i < ANT_N; ++i)
+    for(int i = 0; i < m_ACSData->K; ++i)
     {
         qDebug() << "\tacs::createAnt(), m_ants.size() = " << m_ants.size();
         QList<Vertex*> vl = m_graph->vertices();

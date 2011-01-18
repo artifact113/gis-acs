@@ -128,8 +128,8 @@ private:
     Graph* m_graph;
     ACSData* m_ACSData;
 
-    static const int ANT_N = 100;
-    static const int ITER_N = 100;
+    //static const int ANT_N = 100;
+    static const int ITER_N = 5;
     static const double ALPHA = 0.6;
 };
 
