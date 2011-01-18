@@ -120,7 +120,7 @@ public:
 private:
 
     void init();
-    void acsStep();
+    Tour* acsStep();
     void globalUpdate();
     Tour* shortestTour();
 
@@ -157,6 +157,9 @@ public:
     int tourLength();
 
     void step();
+
+    void reset(QList<Vertex*> vertices);
+
     void localUpdate();
 
 private:
