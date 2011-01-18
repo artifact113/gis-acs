@@ -134,9 +134,6 @@ void Ant::step()
             totalDesirability += d;
         }
 
-
-
-        //qsrand(QDateTime::currentMSecsSinceEpoch());
         double rand = ((double)qrand() / (double)RAND_MAX) * (double)totalDesirability;
 
         bool stop = false;
@@ -193,6 +190,16 @@ Edge* Ant::lastStep()
     return m_tour->last();
 }
 
+void Ant::reset(QList<Vertex*> vertices)
+{
+    qDebug() << "\tant::reset()";
+
+    vertices.removeOne(m_homeVertex);
+    m_currentVertex = m_homeVertex;
+    m_remainingVertices = vertices;
+    m_tour = new Tour();
+}
+
 
 ACS::ACS(Graph* g)
 {
@@ -209,11 +216,20 @@ Tour* ACS::acs()
     qDebug() << "//////////////////////////////////////////////////";
     qDebug() << "acs:: init()";
     init();
+
+    Tour* t = NULL;
+    int Lk = INT_MAX;
     for(int i = 0; i < ITER_N; ++i)
     {
         qDebug() << "acs:: iteration " << i;
         qDebug() << "acs:: acsStep()";
-        acsStep();
+        Tour* temp = acsStep();
+
+        if(temp->length() < Lk)
+        {
+            t = temp;
+            Lk = temp->length();
+        }
         qDebug() << "acs:: globalUpdate()";
         globalUpdate();
     }
@@ -264,7 +280,7 @@ void ACS::init()
 //        t(rk ,sk):=(1-r)t(rk ,sk)+ rt0
 //        rk := sk /* New city for ant k */
 //    End-for
-void ACS::acsStep()
+Tour* ACS::acsStep()
 {
     for(int i = 0; i < m_ACSData->N; ++i)
     {
@@ -278,6 +294,21 @@ void ACS::acsStep()
             qDebug() << "\t ant::localUpdate()";
             m_ants[k]->localUpdate();
         }
+    }
+
+    int Lk = INT_MAX;
+    Tour* t = NULL;
+
+    for(int k = 0; k < m_ACSData->K; ++k)
+    {
+        qDebug() << "\t ant::reset()";
+        if(Lk > m_ants[k]->tourLength())
+        {
+            Lk = m_ants[k]->tourLength();
+            t = m_ants[k]->tour();
+        }
+
+        m_ants[k]->reset(m_graph->vertices());
     }
 }
 
