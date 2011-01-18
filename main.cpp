@@ -7,7 +7,7 @@
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
-	MainWindow w;
+    //MainWindow w;
 
 	QString filename;
 	GIS::Graph *graph = new GIS::Graph;
@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
 		filename = app.arguments().at(index);
 	}
 
-	if (!filename.isEmpty()) {
-		w.open(filename);
-	}
+    //if (!filename.isEmpty()) {
+    //	w.open(filename);
+    //}
 
 //	qDebug() << "graph->readFromFile() returned:" << graph->readFromFile(filename);
 //	qDebug() << "graph->vertices().size() =" << graph->vertices().size();
@@ -55,9 +55,11 @@ int main(int argc, char *argv[])
 //		}
 //	}
 
+    graph->readFromFile(filename);
+    graph->findShortestPaths();
     GIS::ACS * a = new GIS::ACS(graph);
-    a->acs();
-	w.showMaximized();
+   a->acs();
+    //w.showMaximized();
 
 	return app.exec();
 }
