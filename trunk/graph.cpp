@@ -119,25 +119,37 @@ int Ant::tourLength()
 
 void Ant::step()
 {
+    qDebug() << "AAALA MA KOTA!";
     if(!m_remainingVertices.empty())
     {
-        double totalDesirability;
+        qDebug() << "\t\tnot empty!";
+        double totalDesirability = 0;
         QList< QPair<double, Vertex*> > toGo;
+
         foreach(Vertex* v, m_remainingVertices)
         {
-            toGo.append(QPair<double, Vertex*>(desirability(m_currentVertex->edgeTo(v)), v));
-            totalDesirability += desirability(m_currentVertex->edgeTo(v));
+            double d = desirability(m_currentVertex->edgeTo(v));
+            qDebug() << "\t\tdesirability: " << d;
+            toGo.append(QPair<double, Vertex*>(d, v));
+            totalDesirability += d;
         }
 
-        double rand = (qrand() / RAND_MAX) * totalDesirability;
+
+
+        //qsrand(QDateTime::currentMSecsSinceEpoch());
+        double rand = ((double)qrand() / (double)RAND_MAX) * (double)totalDesirability;
 
         bool stop = false;
         int curr = 0;
         int index = 0;
+        qDebug() << "\trand: " << rand << " totalDesirability: " << totalDesirability;
         while(!stop)
         {
+            qDebug() << "rand: " << rand << " curr: " << curr << " max: " << curr + toGo[index].first;
             if(rand >= curr && rand < curr + toGo[index].first)
             {
+                qDebug() << "index: " << index << " size: " << toGo.size();
+
                 Vertex* v = toGo[index].second;
                 m_tour->addStep(m_currentVertex->edgeTo(v));
                 m_currentVertex = toGo[index].second;
@@ -145,11 +157,15 @@ void Ant::step()
                 stop = true;
             }
             else
-                ++index;
+            {
+                curr += toGo[index].first;
+                ++index;                
+            }
         }
     }
     else
     {
+        //qDebug() << "\t\tempty!";
         m_tour->addStep(m_currentVertex->edgeTo(m_homeVertex));
         m_currentVertex = m_homeVertex;
     }
@@ -166,7 +182,10 @@ void Ant::localUpdate()
 
 double Ant::desirability(Edge* e)
 {
-    return m_ACSData->pheromone(e)*qPow(1/e->weight(), ACSData::BETA);
+    double a = m_ACSData->pheromone(e);
+    double b = qPow(1.0/(qreal)e->weight(), ACSData::BETA);
+    qDebug() << "\t\ta*b => " << a << "*" << b << "=" << a*b << "    qPow:" << e->weight() << "^" << ACSData::BETA;
+    return a*b;
 }
 
 Edge* Ant::lastStep()
@@ -180,6 +199,7 @@ ACS::ACS(Graph* g)
     m_ACSData = new ACSData();
     m_ACSData->setGraph(g);
     m_graph = g;
+    int N = g->vertices().size();
 }
 
 Tour* ACS::acs()
@@ -246,14 +266,16 @@ void ACS::init()
 //    End-for
 void ACS::acsStep()
 {
-    for(int i = 0; i < N; ++i)
+    for(int i = 0; i < m_ACSData->N; ++i)
     {
-        for(int k = 0; k < K; ++k)
+        for(int k = 0; k < m_ACSData->K; ++k)
         {
+            qDebug() << "\t ant::step()";
             m_ants[k]->step();
         }
-        for(int k = 0; k < K; ++k)
+        for(int k = 0; k < m_ACSData->K; ++k)
         {
+            qDebug() << "\t ant::localUpdate()";
             m_ants[k]->localUpdate();
         }
     }
@@ -274,7 +296,7 @@ void ACS::globalUpdate()
     Tour* tourBest = NULL;
 
     // calculate best tour
-    for(int k = 0; k < K; ++k)
+    for(int k = 0; k < m_ACSData->K; ++k)
     {
         int Lk = m_ants[k]->tourLength();
         if(Lk < Lbest)
@@ -302,7 +324,7 @@ Tour* ACS::shortestTour()
     int Lbest = INT_MAX;
     Tour* tourBest = NULL;
 
-    for(int k = 0; k < K; ++k)
+    for(int k = 0; k < m_ACSData->K; ++k)
     {
         int Lk = m_ants[k]->tourLength();
         if(Lk < Lbest)
