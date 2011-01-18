@@ -10,6 +10,14 @@ GraphModel::GraphModel(QObject *parent)
 
 void GraphModel::setGraph(Graph *graph)
 {
+	if (!graph) {
+		if (m_graphItem) {
+			delete m_graphItem;
+			m_graphItem = 0;
+		}
+		reset();
+		return;
+	}
 	m_graphItem = new GraphItem;
 	m_graphItem->graph = graph;
 	QList<Vertex *> verts = graph->vertices();

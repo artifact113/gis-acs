@@ -4,6 +4,8 @@
 #include <QDomDocument>
 #include <QtDebug>
 
+#include "singletons.h"
+
 
 namespace GIS {
 
@@ -638,15 +640,20 @@ Path *Graph::tpsPath_ACS()
 
 Path *Graph::tpsPath_BruteForce()
 {
+	BFLogger::instance().log("-------------------------------");
+	BFLogger::instance().log("Starting brute force...");
 	if (m_bfData) {
 		delete m_bfData;
 	}
 
 	m_bfData = new BruteForceData;
+	BFLogger::instance().log("Creating all permutations...");
 	foreach (Vertex *v, m_vertices.values()) {
 		m_bfData->addElement(v);
 	}
 
+	BFLogger::instance().log("DONE");
+	BFLogger::instance().log("Making every permutation a path with end vertex same as start vertex...");
 	QList<Path *> paths;
 	foreach (const QList<Vertex *> &perm, m_bfData->permutations) {
 		Path *path = new Path(this);
@@ -656,8 +663,10 @@ Path *Graph::tpsPath_BruteForce()
 		path->appendVertex(perm.first());
 		paths.append(path);
 	}
-
+	BFLogger::instance().log("DONE");
+	BFLogger::instance().log("Sorting path to find the shortest one...");
 	qSort(paths.begin(), paths.end(), pathLessThan);
+	BFLogger::instance().log("DONE");
 
 	return paths.first();
 }
