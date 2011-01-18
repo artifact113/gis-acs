@@ -3,6 +3,7 @@
 #include <qmath.h>
 #include <QDomDocument>
 #include <QtDebug>
+#include <QDateTime>
 
 #include "singletons.h"
 
@@ -93,7 +94,9 @@ Edge* Tour::last()
 
 Ant::Ant(QList<Vertex*> vertices, ACSData* acsData)
 {
-    qDebug() << "\tant()";
+    qDebug() << "\tant() vertices.size() " << vertices.size();
+
+    qsrand(QDateTime::currentMSecsSinceEpoch());
     int z = qrand() % vertices.size();
     qDebug() << "\tant(): z " << z << " size: " << vertices.size();
 
@@ -176,6 +179,7 @@ ACS::ACS(Graph* g)
 {
     m_ACSData = new ACSData();
     m_ACSData->setGraph(g);
+    m_graph = g;
 }
 
 Tour* ACS::acs()
@@ -210,8 +214,12 @@ void ACS::init()
     // Create Ants
     for(int i = 0; i < ANT_N; ++i)
     {
-        qDebug() << "\tacs::createAnt()";
-        m_ants.append(new Ant(m_graph->vertices(), m_ACSData));
+        qDebug() << "\tacs::createAnt(), m_ants.size() = " << m_ants.size();
+        QList<Vertex*> vl = m_graph->vertices();
+        qDebug() << "\tbirth of ant";
+        Ant* a = new Ant(vl, m_ACSData);
+        qDebug() << "\tant was born";
+        m_ants.append(a);
     }
 }
 

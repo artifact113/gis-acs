@@ -7,6 +7,7 @@ HEADERS += \
     graph.h \
     graphmodel.h \
     mainwindow.h \
+    singletons.h \
     singletons.h
 
 SOURCES += \
