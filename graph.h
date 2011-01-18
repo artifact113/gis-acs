@@ -131,9 +131,6 @@ private:
     static const int ANT_N = 100;
     static const int ITER_N = 100;
     static const double ALPHA = 0.6;
-
-    int N;
-    int K;
 };
 
 class Tour
