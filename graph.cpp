@@ -137,7 +137,7 @@ void Ant::step()
         double rand = ((double)qrand() / (double)RAND_MAX) * (double)totalDesirability;
 
         bool stop = false;
-        int curr = 0;
+        double curr = 0;
         int index = 0;
         qDebug() << "\trand: " << rand << " totalDesirability: " << totalDesirability;
         while(!stop)
