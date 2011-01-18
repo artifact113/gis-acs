@@ -58,7 +58,8 @@ int main(int argc, char *argv[])
     graph->readFromFile(filename);
     graph->findShortestPaths();
     GIS::ACS * a = new GIS::ACS(graph);
-   a->acs();
+    GIS::Tour* t = a->acs();
+    qDebug() << t->length();
     //w.showMaximized();
 
 	return app.exec();
