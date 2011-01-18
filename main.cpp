@@ -55,6 +55,8 @@ int main(int argc, char *argv[])
 //		}
 //	}
 
+    GIS::ACS * a = new GIS::ACS(graph);
+    a->acs();
 	w.showMaximized();
 
 	return app.exec();

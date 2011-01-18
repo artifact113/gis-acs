@@ -67,266 +67,246 @@ public:
 	static const double PHI = 0.9;
 };
 
-class Tour
+
+void Tour::addStep(Edge* e)
 {
-private:
-    QList<Edge* > m_tour;
-    double m_tourLength;
+    m_tour.append(e);
+    m_tourLength += e->weight();
+}
 
-public:
-    void addStep(Edge* e)
-    {
-        m_tour.append(e);
-        m_tourLength += e->weight();
-    }
-
-    bool contains(Edge* e)
-    {
-        return m_tour.contains(e);
-    }
-
-    double length()
-    {
-        return m_tourLength;
-    }
-
-    Edge* last()
-    {
-        return m_tour.last();
-    }
-};
-
-class Ant
+bool Tour::contains(Edge* e)
 {
-public:
+    return m_tour.contains(e);
+}
 
-    Ant(QList<Vertex*> vertices, ACSData* acsData)
+double Tour::length()
+{
+    return m_tourLength;
+}
+
+Edge* Tour::last()
+{
+    return m_tour.last();
+}
+
+
+
+Ant::Ant(QList<Vertex*> vertices, ACSData* acsData)
+{
+    qDebug() << "\tant()";
+    int z = qrand() % vertices.size();
+    qDebug() << "\tant(): z " << z << " size: " << vertices.size();
+
+    m_homeVertex = vertices.takeAt(z);
+    m_currentVertex = m_homeVertex;
+    m_remainingVertices = vertices;
+    m_ACSData = acsData;
+    m_tour = new Tour();
+}
+
+Tour* Ant::tour()
+{
+    return m_tour;
+}
+
+int Ant::tourLength()
+{
+    return m_tour->length();
+}
+
+void Ant::step()
+{
+    if(!m_remainingVertices.empty())
     {
-        m_homeVertex = vertices.takeAt(qrand() % vertices.size());
+        double totalDesirability;
+        QList< QPair<double, Vertex*> > toGo;
+        foreach(Vertex* v, m_remainingVertices)
+        {
+            toGo.append(QPair<double, Vertex*>(desirability(m_currentVertex->edgeTo(v)), v));
+            totalDesirability += desirability(m_currentVertex->edgeTo(v));
+        }
+
+        double rand = (qrand() / RAND_MAX) * totalDesirability;
+
+        bool stop = false;
+        int curr = 0;
+        int index = 0;
+        while(!stop)
+        {
+            if(rand >= curr && rand < curr + toGo[index].first)
+            {
+                Vertex* v = toGo[index].second;
+                m_tour->addStep(m_currentVertex->edgeTo(v));
+                m_currentVertex = toGo[index].second;
+                m_remainingVertices.removeOne(v);
+                stop = true;
+            }
+            else
+                ++index;
+        }
+    }
+    else
+    {
+        m_tour->addStep(m_currentVertex->edgeTo(m_homeVertex));
         m_currentVertex = m_homeVertex;
-        m_remainingVertices = vertices;
-        m_ACSData = acsData;
-        m_tour = new Tour();
     }
+}
 
-    Tour* tour()
-    {
-        return m_tour;
-    }
-
-    int tourLength()
-    {
-        return m_tour->length();
-    }
-
-    void step()
-    {
-        if(!m_remainingVertices.empty())
-        {
-            double totalDesirability;
-            QList< QPair<double, Vertex*> > toGo;
-            foreach(Vertex* v, m_remainingVertices)
-            {
-                toGo.append(QPair<double, Vertex*>(desirability(m_currentVertex->edgeTo(v)), v));
-                totalDesirability += desirability(m_currentVertex->edgeTo(v));
-            }
-
-            double rand = (qrand() / RAND_MAX) * totalDesirability;
-
-            bool stop = false;
-            int curr = 0;
-            int index = 0;
-            while(!stop)
-            {
-                if(rand >= curr && rand < curr + toGo[index].first)
-                {
-                    Vertex* v = toGo[index].second;
-                    m_tour->addStep(m_currentVertex->edgeTo(v));
-                    m_currentVertex = toGo[index].second;
-                    m_remainingVertices.removeOne(v);
-                    stop = true;
-                }
-                else
-                    ++index;
-            }
-        }
-        else
-        {
-            m_tour->addStep(m_currentVertex->edgeTo(m_homeVertex));
-            m_currentVertex = m_homeVertex;
-        }
-    }
-
-    void localUpdate()
-    {
-        Edge* e = lastStep();
-        double pheromoneUpdated = (1 - m_ACSData->PHI)*m_ACSData->pheromone(e) + (m_ACSData->PHI*m_ACSData->pheromone0);
-        m_ACSData->setPheromone(e, pheromoneUpdated);
-    }
-
-private:
-
-    double desirability(Edge* e)
-    {
-		return m_ACSData->pheromone(e)*qPow(1/e->weight(), ACSData::BETA);
-    }
-
-    Edge* lastStep()
-    {
-        return m_tour->last();
-    }
-
-    Vertex* m_homeVertex;
-    Vertex* m_currentVertex;
-    QList<Vertex* > m_remainingVertices;
-    Tour* m_tour;
-    ACSData* m_ACSData;
-};
-
-class ACS
+void Ant::localUpdate()
 {
+    Edge* e = lastStep();
+    double pheromoneUpdated = (1 - m_ACSData->PHI)*m_ACSData->pheromone(e) + (m_ACSData->PHI*m_ACSData->pheromone0);
+    m_ACSData->setPheromone(e, pheromoneUpdated);
+}
 
-public:
-    ACS(Graph* g)
+
+
+double Ant::desirability(Edge* e)
+{
+    return m_ACSData->pheromone(e)*qPow(1/e->weight(), ACSData::BETA);
+}
+
+Edge* Ant::lastStep()
+{
+    return m_tour->last();
+}
+
+
+ACS::ACS(Graph* g)
+{
+    m_ACSData = new ACSData();
+    m_ACSData->setGraph(g);
+}
+
+Tour* ACS::acs()
+{
+    qDebug() << "//////////////////////////////////////////////////";
+    qDebug() << "////////////         A C S          //////////////";
+    qDebug() << "//////////////////////////////////////////////////";
+    qDebug() << "acs:: init()";
+    init();
+    for(int i = 0; i < ITER_N; ++i)
     {
-        m_ACSData = new ACSData();
-        m_ACSData->setGraph(g);
+        qDebug() << "acs:: iteration " << i;
+        qDebug() << "acs:: acsStep()";
+        acsStep();
+        qDebug() << "acs:: globalUpdate()";
+        globalUpdate();
     }
+    qDebug() << "acs:: shortestTour()";
+    return shortestTour();
+}
 
-    Tour *acs()
+// init()
+//    For k:=1 to m do
+//        Let rk1 be the starting city for ant k
+//        Jk(rk1):= {1, ..., n} - rk1
+//        /* Jk(rk1) is the set of yet to be visited cities for
+//        ant k in city rk1 */
+//        rk:= rk1 /* rk is the city where ant k is located */
+//    End-fo
+void ACS::init()
+{
+    // Create Ants
+    for(int i = 0; i < ANT_N; ++i)
     {
-        init();
-        for(int i = 0; i < ITER_N; ++i)
-        {
-            acsStep();
-            globalUpdate();
-//            updateBest();
-        }
-        return shortestTour();
+        qDebug() << "\tacs::createAnt()";
+        m_ants.append(new Ant(m_graph->vertices(), m_ACSData));
     }
+}
 
-private:
-
-    // init()
-    //    For k:=1 to m do
-    //        Let rk1 be the starting city for ant k
-    //        Jk(rk1):= {1, ..., n} - rk1
-    //        /* Jk(rk1) is the set of yet to be visited cities for
-    //        ant k in city rk1 */
-    //        rk:= rk1 /* rk is the city where ant k is located */
-    //    End-fo
-    void init()
+// acsStep():
+//    If i<n
+//    Then
+//        For k:=1 to m do
+//            Choose the next city sk according to Eq. (3) and Eq. (1)
+//            Jk(sk):= Jk(rk) - sk
+//            Tourk(i):=(rk ,sk)
+//        End-for
+//    Else
+//        For k:=1 to m do
+//            /* In this cycle all the ants go back to the initial city rk1 */
+//            sk := rk1
+//            Tourk(i):=(rk ,sk)
+//        End-for
+//    End-if
+//    /* In this phase local updating occurs and pheromone is
+//    updated using Eq. (5)*/
+//    For k:=1 to m do
+//        t(rk ,sk):=(1-r)t(rk ,sk)+ rt0
+//        rk := sk /* New city for ant k */
+//    End-for
+void ACS::acsStep()
+{
+    for(int i = 0; i < N; ++i)
     {
-        // Create Ants
-        for(int i = 0; i < ANT_N; ++i)
-        {
-			m_ants.append(new Ant(m_graph->vertices(), m_ACSData));
-        }
-    }
-
-    // acsStep():
-    //    If i<n
-    //    Then
-    //        For k:=1 to m do
-    //            Choose the next city sk according to Eq. (3) and Eq. (1)
-    //            Jk(sk):= Jk(rk) - sk
-    //            Tourk(i):=(rk ,sk)
-    //        End-for
-    //    Else
-    //        For k:=1 to m do
-    //            /* In this cycle all the ants go back to the initial city rk1 */
-    //            sk := rk1
-    //            Tourk(i):=(rk ,sk)
-    //        End-for
-    //    End-if
-    //    /* In this phase local updating occurs and pheromone is
-    //    updated using Eq. (5)*/
-    //    For k:=1 to m do
-    //        t(rk ,sk):=(1-r)t(rk ,sk)+ rt0
-    //        rk := sk /* New city for ant k */
-    //    End-for
-    void acsStep()
-    {
-        for(int i = 0; i < N; ++i)
-        {
-            for(int k = 0; k < K; ++k)
-            {
-                m_ants[k]->step();
-            }
-            for(int k = 0; k < K; ++k)
-            {
-                m_ants[k]->localUpdate();
-            }
-        }
-    }
-
-    // globalUpdate()
-    //    For k:=1 to m do
-    //        Compute Lk /* Lk is the length of the tour done by ant k*/
-    //    End-for
-    //    Compute Lbest
-    //    /*Update edges belonging to Lbest using Eq. (4) */
-    //    For each edge (r,s)
-    //        t(rk ,sk):=(1-a)t( rk ,sk)+ a (Lbest)-1
-    //    End-for
-    void globalUpdate()
-    {
-        int Lbest = INT_MAX;
-        Tour* tourBest = NULL;
-
-        // calculate best tour
         for(int k = 0; k < K; ++k)
         {
-            int Lk = m_ants[k]->tourLength();
-            if(Lk < Lbest)
-            {
-                Lbest = Lk;
-                tourBest = m_ants[k]->tour();
-            }
+            m_ants[k]->step();
         }
-
-        // update pheromone
-        QList<Edge*> edges = m_ACSData->edges();
-
-        foreach(Edge* e, edges)
-        {
-            m_ACSData->setPheromone(e, (1 - ALPHA)*m_ACSData->pheromone(e));
-            if(tourBest->contains(e))
-            {
-                m_ACSData->setPheromone(e,  m_ACSData->pheromone(e)+ 1/tourBest->length());
-            }
-        }
-    }
-
-    Path* shortestTour()
-    {
-        int Lbest = INT_MAX;
-        Tour* tourBest = NULL;
-
         for(int k = 0; k < K; ++k)
         {
-            int Lk = m_ants[k]->tourLength();
-            if(Lk < Lbest)
-            {
-                Lbest = Lk;
-                tourBest = m_ants[k]->tour();
-            }
+            m_ants[k]->localUpdate();
         }
+    }
+}
 
-        return tourBest;
+// globalUpdate()
+//    For k:=1 to m do
+//        Compute Lk /* Lk is the length of the tour done by ant k*/
+//    End-for
+//    Compute Lbest
+//    /*Update edges belonging to Lbest using Eq. (4) */
+//    For each edge (r,s)
+//        t(rk ,sk):=(1-a)t( rk ,sk)+ a (Lbest)-1
+//    End-for
+void ACS::globalUpdate()
+{
+    int Lbest = INT_MAX;
+    Tour* tourBest = NULL;
+
+    // calculate best tour
+    for(int k = 0; k < K; ++k)
+    {
+        int Lk = m_ants[k]->tourLength();
+        if(Lk < Lbest)
+        {
+            Lbest = Lk;
+            tourBest = m_ants[k]->tour();
+        }
     }
 
-    QList<Ant* > m_ants;
-    Graph* m_graph;
-    ACSData* m_ACSData;
+    // update pheromone
+    QList<Edge*> edges = m_ACSData->edges();
 
-    static const int ANT_N = 100;
-    static const int ITER_N = 100;
-    static const double ALPHA = 0.6;
+    foreach(Edge* e, edges)
+    {
+        m_ACSData->setPheromone(e, (1 - ALPHA)*m_ACSData->pheromone(e));
+        if(tourBest->contains(e))
+        {
+            m_ACSData->setPheromone(e,  m_ACSData->pheromone(e)+ 1/tourBest->length());
+        }
+    }
+}
 
-    int N;
-    int K;
-};
+Tour* ACS::shortestTour()
+{
+    int Lbest = INT_MAX;
+    Tour* tourBest = NULL;
+
+    for(int k = 0; k < K; ++k)
+    {
+        int Lk = m_ants[k]->tourLength();
+        if(Lk < Lbest)
+        {
+            Lbest = Lk;
+            tourBest = m_ants[k]->tour();
+        }
+    }
+
+    return tourBest;
+}
+
 
 
 

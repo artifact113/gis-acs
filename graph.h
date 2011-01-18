@@ -6,11 +6,13 @@
 
 namespace GIS {
 
+class ACS;
+class Ant;
 class Graph;
 class Edge;
 class ACSData;
 class BruteForceData;
-class ACS;
+class Tour;
 
 class Vertex
 {
@@ -106,6 +108,71 @@ private:
 	mutable QList<Vertex *> m_visited;
     //ACSData *m_acsData;
 	BruteForceData *m_bfData;
+};
+
+class ACS
+{
+
+public:
+    ACS(Graph* g);
+    Tour *acs();
+
+private:
+
+    void init();
+    void acsStep();
+    void globalUpdate();
+    Tour* shortestTour();
+
+    QList<Ant* > m_ants;
+    Graph* m_graph;
+    ACSData* m_ACSData;
+
+    static const int ANT_N = 100;
+    static const int ITER_N = 100;
+    static const double ALPHA = 0.6;
+
+    int N;
+    int K;
+};
+
+class Tour
+{
+private:
+    QList<Edge* > m_tour;
+    double m_tourLength;
+
+public:
+    void addStep(Edge* e);
+    bool contains(Edge* e);
+    double length();
+    Edge* last();
+};
+
+class Ant
+{
+public:
+
+    Ant(QList<Vertex*> vertices, ACSData* acsData);
+
+    Tour* tour();
+
+    int tourLength();
+
+    void step();
+    void localUpdate();
+
+private:
+
+    double desirability(Edge* e);
+
+    Edge* lastStep();
+
+    Vertex* m_homeVertex;
+    Vertex* m_currentVertex;
+    QList<Vertex* > m_remainingVertices;
+    Tour* m_tour;
+    ACSData* m_ACSData;
 };
 
 } // namespace GIS
