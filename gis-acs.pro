@@ -8,13 +8,14 @@ HEADERS += \
     graphmodel.h \
     mainwindow.h \
     singletons.h \
-    singletons.h
+    graphgeneratorwidget.h
 
 SOURCES += \
     graph.cpp \
     main.cpp \
     graphmodel.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    graphgeneratorwidget.cpp
 
 OTHER_FILES += \
     test_short_paths.xml

@@ -7,10 +7,10 @@
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
-    //MainWindow w;
+	MainWindow w;
 
 	QString filename;
-	GIS::Graph *graph = new GIS::Graph;
+//	GIS::Graph *graph = new GIS::Graph;
 	if (app.arguments().contains("-f")) {
 		int index = app.arguments().indexOf("-f");
 		if (index == -1) {
@@ -55,12 +55,9 @@ int main(int argc, char *argv[])
 //		}
 //	}
 
-    graph->readFromFile(filename);
-    graph->findShortestPaths();
-    GIS::ACS * a = new GIS::ACS(graph);
-    GIS::Tour* t = a->acs();
-    qDebug() << t->length();
-    //w.showMaximized();
+//    GIS::ACS * a = new GIS::ACS(graph);
+//    a->acs();
+	w.showMaximized();
 
 	return app.exec();
 }

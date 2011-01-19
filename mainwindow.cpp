@@ -1,8 +1,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "singletons.h"
+#include "graphgeneratorwidget.h"
 
 #include <QFileDialog>
+#include <QDialog>
 #include <QMessageBox>
 #include <QTime>
 #include <QStandardItemModel>
@@ -25,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->actionOpen_file, SIGNAL(triggered()), SLOT(open()));
 	connect(ui->acsRunButton, SIGNAL(clicked()), SLOT(runAcs()));
 	connect(ui->bfRunButton, SIGNAL(clicked()), SLOT(runBruteForce()));
+	connect(ui->actionGenerate_graph, SIGNAL(triggered()), SLOT(generateGraph()));
 
 	ui->bfConsole->setStyleSheet("font-family : \"Consolas\", \"monospace\", \"Courier New\"");
 	ui->acsConsole->setStyleSheet("font-family : \"Consolas\", \"monospace\", \"Courier New\"");
@@ -140,4 +143,12 @@ void MainWindow::runBruteForce()
 	}
 	ui->bfTimeLabel->setText(QString::number((double)msec/1000.0, 'f', 3) + "s");
 	ui->bfTotalLabel->setText(QString::number(shortestPath->totalCost()));
+}
+
+void MainWindow::generateGraph()
+{
+	QDialog dialog(this);
+	dialog.setLayout(new QVBoxLayout);
+	dialog.layout()->addWidget(new GraphGeneratorWidget(&dialog));
+	dialog.exec();
 }

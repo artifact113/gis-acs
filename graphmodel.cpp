@@ -41,6 +41,9 @@ void GraphModel::setGraph(Graph *graph)
 int GraphModel::columnCount(const QModelIndex &parent) const
 {
 	Q_UNUSED(parent);
+	if (!m_graphItem) {
+		return 0;
+	}
 	return 4;
 }
 
@@ -75,6 +78,9 @@ int GraphModel::rowCount(const QModelIndex &parent) const
 
 QModelIndex GraphModel::index(int row, int column, const QModelIndex &parent) const
 {
+	if (!m_graphItem) {
+		return QModelIndex();
+	}
 	if (!parent.isValid()) {
 		if (row == 0 && column == 0) {
 			return createIndex(row, column, (void *)m_graphItem);
@@ -109,6 +115,9 @@ QModelIndex GraphModel::index(int row, int column, const QModelIndex &parent) co
 
 QModelIndex GraphModel::parent(const QModelIndex &child) const
 {
+	if (!m_graphItem) {
+		return QModelIndex();
+	}
 	if (!child.isValid()) {
 		return QModelIndex();
 	}
@@ -136,6 +145,9 @@ QModelIndex GraphModel::parent(const QModelIndex &child) const
 
 QVariant GraphModel::data(const QModelIndex &index, int role) const
 {
+	if (!m_graphItem) {
+		return QVariant();
+	}
 	if (!index.isValid()) {
 		return QVariant();
 	}

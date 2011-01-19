@@ -22,6 +22,7 @@ private slots:
 	void runAcs();
 	void runBruteForce();
 	void turnTuComplete();
+	void generateGraph();
 private:
     Ui::MainWindow *ui;
 	GIS::Graph *m_graph;

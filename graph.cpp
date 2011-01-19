@@ -4,6 +4,7 @@
 #include <QDomDocument>
 #include <QtDebug>
 #include <QDateTime>
+#include <QTextCodec>
 
 #include "singletons.h"
 
@@ -658,8 +659,27 @@ bool Graph::saveToFile(const QString &filename) const
 	doc.setContent(QString("<?xml version=\"1.0\" encoding=\"utf-8\"?>"
 						   "<graph></graph>"));
 	QDomElement graphElem = doc.documentElement();
+	foreach (Edge *edge, set) {
+		QDomElement edgeElem = doc.createElement("edge");
+		QDomElement vElem = doc.createElement("vertex");
+		vElem.appendChild(doc.createTextNode(edge->startPoint()->label()));
+		edgeElem.appendChild(vElem);
+		vElem = doc.createElement("vertex");
+		vElem.appendChild(doc.createTextNode(edge->endPoint()->label()));
+		edgeElem.appendChild(vElem);
+		QDomElement wElem = doc.createElement("weight");
+		wElem.appendChild(doc.createTextNode(QString::number(edge->weight())));
+		edgeElem.appendChild(wElem);
+		graphElem.appendChild(edgeElem);
+	}
 
-	return false;
+	QTextStream stream(&file);
+	stream.setCodec(QTextCodec::codecForName("UTF-8"));
+	stream << doc.toString(2);
+	stream.flush();
+	file.close();
+
+	return true;
 }
 
 Path *Graph::tpsPath(TpsType type) const
