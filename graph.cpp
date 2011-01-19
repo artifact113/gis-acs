@@ -87,13 +87,13 @@ Vertex* Tour::startPoint()
     return m_startPoint;
 }
 
-Path* Tour::toPath(Vertex* startVertex)
+Path* Tour::toPath()
 {
     QList<Vertex*> rlist;
 
-    rlist.append(startVertex);
-    Vertex* curr = startVertex;
-    qDebug() << "start point: " << startVertex->label();
+    rlist.append(m_startPoint);
+    Vertex* curr = m_startPoint;
+    qDebug() << "start point: " << m_startPoint->label();
     for(int i = 0; i < m_tour.size(); ++i)
     {
         Edge* e = m_tour[i];
@@ -118,9 +118,9 @@ Path* Tour::toPath(Vertex* startVertex)
     return p;
 }
 
-Path* Tour::toFullPath(Vertex* startVertex)
+Path* Tour::toFullPath()
 {
-    return toPath(startVertex)->getFullPath();
+    return toPath()->getFullPath();
 }
 
 double Tour::length()
@@ -732,7 +732,7 @@ Path *Graph::tpsPath(TpsType type) const
 
 	switch (type) {
 	case BruteForce:
-		return const_cast<Graph *>(this)->tpsPath_BruteForce();
+        return const_cast<Graph *>(this)->tpsPath_BruteForce()->getFullPath();
 	case ACS:
 		return const_cast<Graph *>(this)->tpsPath_ACS();
 	}
@@ -740,9 +740,11 @@ Path *Graph::tpsPath(TpsType type) const
 	return 0;
 }
 
-Path *Graph::tpsPath_ACS()
+Path* Graph::tpsPath_ACS()
 {
-	return 0;
+    GIS::ACS* a = new GIS::ACS(this);
+    Tour* t = a->acs();
+    return t->toFullPath();
 }
 
 Path *Graph::tpsPath_BruteForce()
