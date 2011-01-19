@@ -82,6 +82,47 @@ bool Tour::contains(Edge* e)
     return m_tour.contains(e);
 }
 
+Vertex* Tour::startPoint()
+{
+    return m_startPoint;
+}
+
+Path* Tour::toPath(Vertex* startVertex)
+{
+    QList<Vertex*> rlist;
+
+    rlist.append(startVertex);
+    Vertex* curr = startVertex;
+    qDebug() << "start point: " << startVertex->label();
+    for(int i = 0; i < m_tour.size(); ++i)
+    {
+        Edge* e = m_tour[i];
+        //qDebug() << "start: " << e->startPoint()->label() << " end: " << e->endPoint()->label();
+        if(e->startPoint()->label() == curr->label())
+        {
+            //qDebug() << "curr: " << curr->label() << " adding: " << e->endPoint()->label();
+            qDebug() << " adding: " << e->endPoint()->label();
+            rlist.append(e->endPoint());
+            curr = e->endPoint();
+        }
+        else
+        {
+            //qDebug() << "curr: " << curr->label() << " adding: " << e->startPoint()->label();
+            qDebug() << " adding: " << e->startPoint()->label();
+            rlist.append(e->startPoint());
+            curr = e->startPoint();
+        }
+    }
+    Path* p = new Path();
+    p->setVertices(rlist);
+    return p;
+}
+
+Path* Tour::toFullPath(Vertex* startVertex)
+{
+    return toPath(startVertex)->getFullPath();
+}
+
 double Tour::length()
 {
     return m_tourLength;
@@ -106,7 +147,7 @@ Ant::Ant(QList<Vertex*> vertices, ACSData* acsData)
     m_currentVertex = m_homeVertex;
     m_remainingVertices = vertices;
     m_ACSData = acsData;
-    m_tour = new Tour();
+    m_tour = new Tour(m_homeVertex);
 }
 
 Tour* Ant::tour()
@@ -199,7 +240,7 @@ void Ant::reset(QList<Vertex*> vertices)
     vertices.removeOne(m_homeVertex);
     m_currentVertex = m_homeVertex;
     m_remainingVertices = vertices;
-    m_tour = new Tour();
+    m_tour = new Tour(m_homeVertex);
 }
 
 
@@ -863,17 +904,17 @@ bool Path::appendVertex(Vertex *v)
 		return true;
 	}
 	Vertex *prev = m_vertices.last();
-	if (prev == v) {
-		qDebug("Cannot add same vertex in path just after itself");
-		return false;
-	}
+    if (prev == v) {
+        qDebug("Cannot add same vertex in path just after itself");
+        return false;
+    }
 	m_vertices.append(v);
-	Edge *e = prev->edgeTo(v);
-	if (!e) {
-		qDebug("No such edge!");
-		return false;
-	}
-	m_total += e->weight();
+    Edge *e = prev->edgeTo(v);
+    if (!e) {
+        qDebug("No such edge!");
+        return false;
+    }
+    m_total += e->weight();
 	return true;
 }
 
@@ -905,6 +946,48 @@ int Path::totalCost() const
 bool Path::isValid() const
 {
 	return !m_vertices.isEmpty();
+}
+
+QList<Vertex* > Path::getFullPathRecursive(Vertex* from, Vertex* to)
+{
+    if(from->label() == to->label())
+    {
+        Path *result_path = new Path();
+        //result_path->appendVertex(from);
+        return result_path->vertices();
+    }
+
+    if(to->previous(from->label()) != NULL)
+    {
+        QList<Vertex* > result_path = getFullPathRecursive(from, to->previous(from->label()));
+        result_path.append(to);
+        return result_path;
+    }
+
+    return QList<Vertex* >();
+}
+
+Path* Path::getFullPath()
+{
+    QList<Vertex*> vlist = vertices();
+    QList<Vertex*> rlist;
+
+    rlist.append(vlist[0]);
+
+    for(int i = 0; i < vlist.size() - 1; ++i)
+    {
+        rlist.append(getFullPathRecursive(vlist[i], vlist[i+1]));
+    }
+
+    foreach(Vertex* v, rlist)
+    {
+        qDebug() << v->label();
+    }
+
+    Path* result_path = new Path(m_graph);
+    result_path->setVertices(rlist);
+
+    return result_path;
 }
 
 } // namespace GIS

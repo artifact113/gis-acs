@@ -63,13 +63,18 @@ private:
 class Path
 {
 private:
+
 	Path(Graph *parentGraph);
 	bool appendVertex(Vertex *v);
-	bool setVertices(const QList<Vertex *> &verts);
+    QList<Vertex* > getFullPathRecursive(Vertex* from, Vertex* to);
+
 public:
+    Path(){}
+    bool setVertices(const QList<Vertex *> &verts);
 	QList<Vertex *> vertices() const;
 	int totalCost() const;
 	bool isValid() const;
+    Path* getFullPath();
 
 	friend class Graph;
 private:
@@ -138,12 +143,22 @@ class Tour
 private:
     QList<Edge* > m_tour;
     double m_tourLength;
+    Vertex* m_startPoint;
 
 public:
+    //Tour();
+    Tour(Vertex* startPoint)
+    {
+        m_startPoint = startPoint;
+    }
+
     void addStep(Edge* e);
     bool contains(Edge* e);
+    Vertex* startPoint();
     double length();
     Edge* last();
+    Path* toPath(Vertex* startVertex);
+    Path* toFullPath(Vertex* startVertex);
 };
 
 class Ant
