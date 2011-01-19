@@ -63,7 +63,7 @@ void GraphGeneratorWidget::generateGraph()
 		GIS::Vertex *v = m_graph->createVertex(generateName());
 		for (int i = 0; i < lvl; ++i) {
 			int index = qrand() % vertices.size();
-			vertices[index]->connectTo(v, qrand() % 100);
+            vertices[index]->connectTo(v, qrand() % 100 + 1);
 			vertices.removeAt(index);
 		}
 	}
