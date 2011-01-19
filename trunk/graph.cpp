@@ -73,6 +73,7 @@ void Tour::addStep(Edge* e)
 {
     m_tour.append(e);
     m_tourLength += e->weight();
+    qDebug() << "Waga œcie¿ki: " << e->weight() << " m_length: " << m_tourLength;
 }
 
 bool Tour::contains(Edge* e)
@@ -224,7 +225,7 @@ Tour* ACS::acs()
         qDebug() << "acs:: iteration " << i;
         qDebug() << "acs:: acsStep()";
         Tour* temp = acsStep();
-
+        qDebug() << "TOUR: " << temp->length() << " Lk: " << Lk;
         if(temp->length() < Lk)
         {
             t = temp;
@@ -235,7 +236,7 @@ Tour* ACS::acs()
         globalUpdate();
     }
     qDebug() << "acs:: shortestTour()";
-    return shortestTour();
+    return t;
 }
 
 // init()
@@ -302,7 +303,7 @@ Tour* ACS::acsStep()
 
     for(int k = 0; k < m_ACSData->K; ++k)
     {
-        qDebug() << "\t ant::reset()";
+        qDebug() << "\t ant::reset() " << " Lk " << Lk << " < tour[" << k << "] " <<  m_ants[k]->tourLength();
         if(Lk > m_ants[k]->tourLength())
         {
             Lk = m_ants[k]->tourLength();
@@ -310,7 +311,10 @@ Tour* ACS::acsStep()
         }
 
         m_ants[k]->reset(m_graph->vertices());
+        qDebug() << "\t BUMant::reset() " << " Lk " << Lk << " < tour[" << k << "] " <<  m_ants[k]->tourLength();
     }
+
+    return t;
 }
 
 // globalUpdate()
