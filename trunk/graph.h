@@ -9,6 +9,7 @@ namespace GIS {
 class ACS;
 class Ant;
 class Graph;
+class Path;
 class Edge;
 class ACSData;
 class BruteForceData;
@@ -157,8 +158,8 @@ public:
     Vertex* startPoint();
     double length();
     Edge* last();
-    Path* toPath(Vertex* startVertex);
-    Path* toFullPath(Vertex* startVertex);
+    Path* toPath();
+    Path* toFullPath();
 };
 
 class Ant
