@@ -223,6 +223,7 @@ void Ant::localUpdate()
 double Ant::desirability(Edge* e)
 {
     double a = m_ACSData->pheromone(e);
+    qDebug() << "waga [" << e->startPoint()->label() << ", " << e->endPoint()->label() << "] : " << e->weight();
     double b = qPow(1.0/(qreal)e->weight(), ACSData::BETA);
     qDebug() << "\t\ta*b => " << a << "*" << b << "=" << a*b << "    qPow:" << e->weight() << "^" << ACSData::BETA;
     return a*b;
