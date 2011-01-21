@@ -250,7 +250,7 @@ ACS::ACS(Graph* g)
     m_ACSData = new ACSData();
     m_ACSData->setGraph(g);
     m_graph = g;
-    int N = g->vertices().size();
+//    int N = g->vertices().size();
 }
 
 Tour* ACS::acs()
@@ -724,7 +724,7 @@ bool Graph::saveToFile(const QString &filename) const
 	return true;
 }
 
-Path *Graph::tpsPath(TpsType type) const
+Path *Graph::tspPath(TspType type) const
 {
 	if (!m_vertices.size()) {
 		qDebug() << Q_FUNC_INFO << "Graph is empty!";
@@ -733,22 +733,22 @@ Path *Graph::tpsPath(TpsType type) const
 
 	switch (type) {
 	case BruteForce:
-        return const_cast<Graph *>(this)->tpsPath_BruteForce()->getFullPath();
+		return const_cast<Graph *>(this)->tspPath_BruteForce()->getFullPath();
 	case ACS:
-		return const_cast<Graph *>(this)->tpsPath_ACS();
+		return const_cast<Graph *>(this)->tspPath_ACS();
 	}
 
 	return 0;
 }
 
-Path* Graph::tpsPath_ACS()
+Path* Graph::tspPath_ACS()
 {
     GIS::ACS* a = new GIS::ACS(this);
     Tour* t = a->acs();
     return t->toFullPath();
 }
 
-Path *Graph::tpsPath_BruteForce()
+Path *Graph::tspPath_BruteForce()
 {
 	BFLogger::instance().log("-------------------------------");
 	BFLogger::instance().log("Starting brute force...");
@@ -774,11 +774,20 @@ Path *Graph::tpsPath_BruteForce()
 		paths.append(path);
 	}
 	BFLogger::instance().log("DONE");
-	BFLogger::instance().log("Sorting path to find the shortest one...");
-	qSort(paths.begin(), paths.end(), pathLessThan);
+	BFLogger::instance().log("Searching for the shortest path...");
+	Path *shortest = 0;
+	for (QList<Path *>::iterator it = paths.begin(); it != paths.end(); ++it) {
+		if (!shortest) {
+			shortest = *it;
+			continue;
+		}
+		if ((*it)->totalCost() < shortest->totalCost()) {
+			shortest = *it;
+		}
+	}
 	BFLogger::instance().log("DONE");
 
-	return paths.first();
+	return shortest;
 }
 
 /*!

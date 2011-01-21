@@ -87,7 +87,7 @@ private:
 class Graph
 {
 public:
-	enum TpsType {
+	enum TspType {
 		BruteForce,
 		ACS
 	};
@@ -103,12 +103,12 @@ public:
 	bool readFromFile(const QString &filename);
 	bool saveToFile(const QString &filename) const;
 
-	Path *tpsPath(TpsType type = BruteForce) const;
+	Path *tspPath(TspType type = BruteForce) const;
 private:
 	void dfsTraverseFrom(Vertex *v) const;
 	Edge* d(QString label_i, QString label_j);
-	Path *tpsPath_BruteForce();
-	Path *tpsPath_ACS();
+	Path *tspPath_BruteForce();
+	Path *tspPath_ACS();
 private:
 	QHash<QString, Vertex *> m_vertices;
 	mutable QList<Vertex *> m_visited;

@@ -95,7 +95,7 @@ void MainWindow::runAcs()
 	}
 	QTime time;
 	time.start();
-	GIS::Path *shortestPath = m_graph->tpsPath(GIS::Graph::ACS);
+	GIS::Path *shortestPath = m_graph->tspPath(GIS::Graph::ACS);
 	int msec = time.elapsed();
 	ACSLogger::instance().log(tr("Time elapsed: ") + QString::number((double)msec/1000.0, 'f', 3) + "s");
 	ACSLogger::instance().log("-------------------------------");
@@ -126,7 +126,7 @@ void MainWindow::runBruteForce()
 	}
 	QTime time;
 	time.start();
-	GIS::Path *shortestPath = m_graph->tpsPath(GIS::Graph::BruteForce);
+	GIS::Path *shortestPath = m_graph->tspPath(GIS::Graph::BruteForce);
 	int msec = time.elapsed();
 	BFLogger::instance().log(tr("Time elapsed: ") + QString::number((double)msec/1000.0, 'f', 3) + "s");
 	BFLogger::instance().log("-------------------------------");
