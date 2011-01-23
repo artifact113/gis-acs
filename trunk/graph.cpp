@@ -44,7 +44,7 @@ public:
 
 	void addEdge(Edge* e)
 	{
-		m_pheromones[e] = pheromone0;
+		m_pheromones[e] = ACSParameters::instance().pheromoneZero();
 	}
 
 	void addEdge(Edge* e, double pheromone)
@@ -63,10 +63,10 @@ public:
 	}
 
 	int N;
-	static const int K = 6;
-	static const double BETA = 0.6;
-	static const int pheromone0 = 10;
-	static const double PHI = 0.9;
+	static const int K = 10;
+//	static const double BETA = 0.6;
+//	static const int pheromone0 = 10;
+//	static const double PHI = 0.9;
 };
 
 
@@ -162,17 +162,16 @@ int Ant::tourLength()
 
 void Ant::step()
 {
-    qDebug() << "AAALA MA KOTA!";
     if(!m_remainingVertices.empty())
     {
-        qDebug() << "\t\tnot empty!";
+		//qDebug() << "\t\tnot empty!";
         double totalDesirability = 0;
         QList< QPair<double, Vertex*> > toGo;
 
         foreach(Vertex* v, m_remainingVertices)
         {
             double d = desirability(m_currentVertex->edgeTo(v));
-            qDebug() << "\t\tdesirability: " << d;
+			//qDebug() << "\t\tdesirability: " << d;
             toGo.append(QPair<double, Vertex*>(d, v));
             totalDesirability += d;
         }
@@ -182,13 +181,13 @@ void Ant::step()
         bool stop = false;
         double curr = 0;
         int index = 0;
-        qDebug() << "\trand: " << rand << " totalDesirability: " << totalDesirability;
+		//qDebug() << "\trand: " << rand << " totalDesirability: " << totalDesirability;
         while(!stop)
         {
-            qDebug() << "rand: " << rand << " curr: " << curr << " max: " << curr + toGo[index].first;
+			//qDebug() << "rand: " << rand << " curr: " << curr << " max: " << curr + toGo[index].first;
             if(rand >= curr && rand < curr + toGo[index].first)
             {
-                qDebug() << "index: " << index << " size: " << toGo.size();
+				//qDebug() << "index: " << index << " size: " << toGo.size();
 
                 Vertex* v = toGo[index].second;
                 m_tour->addStep(m_currentVertex->edgeTo(v));
@@ -214,7 +213,7 @@ void Ant::step()
 void Ant::localUpdate()
 {
     Edge* e = lastStep();
-    double pheromoneUpdated = (1 - m_ACSData->PHI)*m_ACSData->pheromone(e) + (m_ACSData->PHI*m_ACSData->pheromone0);
+	double pheromoneUpdated = (1 - ACSParameters::instance().phi())*m_ACSData->pheromone(e) + (ACSParameters::instance().phi()*ACSParameters::instance().pheromoneZero());
     m_ACSData->setPheromone(e, pheromoneUpdated);
 }
 
@@ -223,9 +222,9 @@ void Ant::localUpdate()
 double Ant::desirability(Edge* e)
 {
     double a = m_ACSData->pheromone(e);
-    qDebug() << "waga [" << e->startPoint()->label() << ", " << e->endPoint()->label() << "] : " << e->weight();
-    double b = qPow(1.0/(qreal)e->weight(), ACSData::BETA);
-    qDebug() << "\t\ta*b => " << a << "*" << b << "=" << a*b << "    qPow:" << e->weight() << "^" << ACSData::BETA;
+	//qDebug() << "waga [" << e->startPoint()->label() << ", " << e->endPoint()->label() << "] : " << e->weight();
+	double b = qPow(1.0/(qreal)e->weight(), ACSParameters::instance().beta());
+	//qDebug() << "\t\ta*b => " << a << "*" << b << "=" << a*b << "    qPow:" << e->weight() << "^" << ACSParameters::instance().beta();
     return a*b;
 }
 
@@ -236,7 +235,7 @@ Edge* Ant::lastStep()
 
 void Ant::reset(QList<Vertex*> vertices)
 {
-    qDebug() << "\tant::reset()";
+	//qDebug() << "\tant::reset()";
 
     vertices.removeOne(m_homeVertex);
     m_currentVertex = m_homeVertex;
