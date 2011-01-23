@@ -152,3 +152,18 @@ void MainWindow::generateGraph()
 	dialog.layout()->addWidget(new GraphGeneratorWidget(&dialog));
 	dialog.exec();
 }
+
+void MainWindow::setPhi(double p)
+{
+	ACSParameters::instance().setPhi(p);
+}
+
+void MainWindow::setPheromone(int ph)
+{
+	ACSParameters::instance().setPheromoneZero(ph);
+}
+
+void MainWindow::setBeta(double b)
+{
+	ACSParameters::instance().setBeta(b);
+}

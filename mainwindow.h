@@ -23,6 +23,9 @@ private slots:
 	void runBruteForce();
 	void turnTuComplete();
 	void generateGraph();
+	void setPhi(double p);
+	void setBeta(double b);
+	void setPheromone(int ph);
 private:
     Ui::MainWindow *ui;
 	GIS::Graph *m_graph;
