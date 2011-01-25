@@ -74,7 +74,7 @@ void Tour::addStep(Edge* e)
 {
     m_tour.append(e);
     m_tourLength += e->weight();
-    qDebug() << "Waga œcie¿ki: " << e->weight() << " m_length: " << m_tourLength;
+    qDebug() << "Waga Å›cieÅ¼ki: " << e->weight() << " m_length: " << m_tourLength;
 }
 
 bool Tour::contains(Edge* e)
@@ -222,9 +222,7 @@ void Ant::localUpdate()
 double Ant::desirability(Edge* e)
 {
     double a = m_ACSData->pheromone(e);
-	//qDebug() << "waga [" << e->startPoint()->label() << ", " << e->endPoint()->label() << "] : " << e->weight();
 	double b = qPow(1.0/(qreal)e->weight(), ACSParameters::instance().beta());
-	//qDebug() << "\t\ta*b => " << a << "*" << b << "=" << a*b << "    qPow:" << e->weight() << "^" << ACSParameters::instance().beta();
     return a*b;
 }
 
@@ -235,8 +233,6 @@ Edge* Ant::lastStep()
 
 void Ant::reset(QList<Vertex*> vertices)
 {
-	//qDebug() << "\tant::reset()";
-
     vertices.removeOne(m_homeVertex);
     m_currentVertex = m_homeVertex;
     m_remainingVertices = vertices;
@@ -254,30 +250,20 @@ ACS::ACS(Graph* g)
 
 Tour* ACS::acs()
 {
-    qDebug() << "//////////////////////////////////////////////////";
-    qDebug() << "////////////         A C S          //////////////";
-    qDebug() << "//////////////////////////////////////////////////";
-    qDebug() << "acs:: init()";
     init();
 
     Tour* t = NULL;
     int Lk = INT_MAX;
     for(int i = 0; i < ITER_N; ++i)
     {
-        qDebug() << "acs:: iteration " << i;
-        qDebug() << "acs:: acsStep()";
         Tour* temp = acsStep();
-        qDebug() << "TOUR: " << temp->length() << " Lk: " << Lk;
         if(temp->length() < Lk)
         {
             t = temp;
             Lk = temp->length();
-            qDebug() << "MINNNNNNNNN: " << Lk;
         }
-        qDebug() << "acs:: globalUpdate()";
         globalUpdate();
     }
-    qDebug() << "acs:: shortestTour()";
     return t;
 }
 
@@ -294,11 +280,8 @@ void ACS::init()
     // Create Ants
     for(int i = 0; i < m_ACSData->K; ++i)
     {
-        qDebug() << "\tacs::createAnt(), m_ants.size() = " << m_ants.size();
         QList<Vertex*> vl = m_graph->vertices();
-        qDebug() << "\tbirth of ant";
         Ant* a = new Ant(vl, m_ACSData);
-        qDebug() << "\tant was born";
         m_ants.append(a);
     }
 }
@@ -330,12 +313,10 @@ Tour* ACS::acsStep()
     {
         for(int k = 0; k < m_ACSData->K; ++k)
         {
-            qDebug() << "\t ant::step()";
             m_ants[k]->step();
         }
         for(int k = 0; k < m_ACSData->K; ++k)
         {
-            qDebug() << "\t ant::localUpdate()";
             m_ants[k]->localUpdate();
         }
     }
@@ -345,7 +326,6 @@ Tour* ACS::acsStep()
 
     for(int k = 0; k < m_ACSData->K; ++k)
     {
-        qDebug() << "\t ant::reset() " << " Lk " << Lk << " < tour[" << k << "] " <<  m_ants[k]->tourLength();
         if(Lk > m_ants[k]->tourLength())
         {
             Lk = m_ants[k]->tourLength();
@@ -353,7 +333,6 @@ Tour* ACS::acsStep()
         }
 
         m_ants[k]->reset(m_graph->vertices());
-        qDebug() << "\t BUMant::reset() " << " Lk " << Lk << " < tour[" << k << "] " <<  m_ants[k]->tourLength();
     }
 
     return t;
@@ -479,7 +458,6 @@ void Graph::findShortestPaths()
 		{
 			if(label_i != label_j && d(label_i, label_j) != NULL/*&& d(label_i, label_j)->weight()*/)
 			{
-				qDebug() << label_i << " " << label_j;
 				m_vertices[label_j]->setPrevious(label_i, m_vertices[label_i]);
 			}
 		}
@@ -519,7 +497,6 @@ void Graph::findShortestPaths()
                             }
 							else
                             {
-                                //qDebug() << "Virtual: " << label_i << "-> " << label_j;
 								vertex(label_i)->virtuallyConnectTo(vertex(label_j), d_ik_weight + d_kj_weight);
 
                                 m_vertices[label_j]->setPrevious(label_i, m_vertices[label_j]->previous(label_k));
